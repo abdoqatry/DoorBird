@@ -24,14 +24,14 @@
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
             uuid = "D02096D8-E2E8-40DF-86B1-964504AA0AC0"
-            shouldBeEnabled = "Yes"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "DoorBird/Controller/HomeVC.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "503"
-            endingLineNumber = "503"
+            startingLineNumber = "505"
+            endingLineNumber = "505"
             landmarkName = "sendSubscribe(unsubscribe:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -110,8 +110,8 @@
             filePath = "DoorBird/Controller/HomeVC.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "407"
-            endingLineNumber = "407"
+            startingLineNumber = "408"
+            endingLineNumber = "408"
             landmarkName = "transmitMic()"
             landmarkType = "7">
          </BreakpointContent>
@@ -126,8 +126,8 @@
             filePath = "DoorBird/Controller/HomeVC.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "346"
-            endingLineNumber = "346"
+            startingLineNumber = "345"
+            endingLineNumber = "345"
             landmarkName = "transmitAudioData(audioData:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -142,8 +142,8 @@
             filePath = "DoorBird/Controller/HomeVC.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "351"
-            endingLineNumber = "351"
+            startingLineNumber = "352"
+            endingLineNumber = "352"
             landmarkName = "transmitAudioData(audioData:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -152,14 +152,14 @@
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
             uuid = "A48AD78D-6C5E-4397-9536-73D594AAD974"
-            shouldBeEnabled = "Yes"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "DoorBird/Controller/HomeVC.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "461"
-            endingLineNumber = "461"
+            startingLineNumber = "463"
+            endingLineNumber = "463"
             landmarkName = "sendEncryptedPacket(data:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -280,7 +280,7 @@
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
             uuid = "C612765E-E69E-4630-825B-88389E5B82B9"
-            shouldBeEnabled = "Yes"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "DoorBird/Controller/HomeVC.swift"
@@ -312,7 +312,7 @@
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
             uuid = "85A72607-458E-40FC-9628-AD2E1F8C528B"
-            shouldBeEnabled = "Yes"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "DoorBird/Controller/HomeVC.swift"
@@ -328,14 +328,14 @@
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
             uuid = "F6ED3B20-0BD2-4DF6-80EF-05CB8127D1F3"
-            shouldBeEnabled = "Yes"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "DoorBird/Controller/HomeVC.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "339"
-            endingLineNumber = "339"
+            startingLineNumber = "338"
+            endingLineNumber = "338"
             landmarkName = "processPacket(_:sourceAddress:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -344,7 +344,7 @@
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
             uuid = "4A3D0AC2-DD5A-4937-88B4-A3620DC24351"
-            shouldBeEnabled = "Yes"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "DoorBird/Controller/HomeVC.swift"
@@ -366,57 +366,41 @@
             filePath = "DoorBird/Controller/SodiumEncryption.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "31"
-            endingLineNumber = "31"
-            landmarkName = "decrypt(encryptionType:cypher:nonce:password:)"
-            landmarkType = "7">
+            startingLineNumber = "32"
+            endingLineNumber = "32"
+            landmarkName = "unknown"
+            landmarkType = "0">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
             uuid = "9E2EE6B9-6AF6-494D-B522-80F7B61A9C0B"
-            shouldBeEnabled = "Yes"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "DoorBird/Controller/SodiumEncryption.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "82"
-            endingLineNumber = "82"
-            landmarkName = "encrypt(encryptionType:plain:nonce:password:)"
-            landmarkType = "7">
+            startingLineNumber = "86"
+            endingLineNumber = "86"
+            landmarkName = "unknown"
+            landmarkType = "0">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
             uuid = "54B246EC-D391-47DE-B27C-D0BC5F6D6945"
-            shouldBeEnabled = "Yes"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "DoorBird/Controller/HomeVC.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "494"
-            endingLineNumber = "494"
+            startingLineNumber = "496"
+            endingLineNumber = "496"
             landmarkName = "sendPacket(data:length:)"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            uuid = "B60CB0CC-D80B-4348-A3E4-6F667F83A383"
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "DoorBird/Controller/JpegQueu.swift"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "27"
-            endingLineNumber = "27"
-            landmarkName = "enqueue(seq:data:imgListener:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -503,24 +487,8 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "34E07116-1911-4385-9DB4-B1607B712BB0"
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "DoorBird/Controller/AudioQueue.swift"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "138"
-            endingLineNumber = "138"
-            landmarkName = "generateL2u()"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
             uuid = "67F7DDB7-1513-4655-ABC8-50987CD870B3"
-            shouldBeEnabled = "Yes"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "DoorBird/Controller/AudioQueue.swift"
@@ -536,7 +504,7 @@
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
             uuid = "681DFCE8-0C6A-4C43-9475-C0E60D5530C4"
-            shouldBeEnabled = "Yes"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "DoorBird/Controller/AudioQueue.swift"
@@ -552,7 +520,7 @@
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
             uuid = "A0840E3E-E0F7-45E9-9B1A-C64C2B5EBAC8"
-            shouldBeEnabled = "Yes"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "DoorBird/Controller/AudioQueue.swift"
@@ -562,6 +530,326 @@
             endingLineNumber = "168"
             landmarkName = "Heap"
             landmarkType = "3">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "DA6A42E4-7A84-49E9-8088-62CEB53E6650"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "DoorBird/Controller/HomeVC.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "425"
+            endingLineNumber = "425"
+            landmarkName = "transmitMic()"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "1D10225B-87DD-41F6-9790-8FD3242DB124"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "DoorBird/Controller/HomeVC.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "355"
+            endingLineNumber = "355"
+            landmarkName = "transmitAudioData(audioData:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "88D223B4-EB3F-4CCA-8534-025FE5E50269"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "DoorBird/Controller/HomeVC.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "521"
+            endingLineNumber = "521"
+            landmarkName = "sendSubscribe(unsubscribe:)"
+            landmarkType = "7">
+            <Locations>
+               <Location
+                  uuid = "88D223B4-EB3F-4CCA-8534-025FE5E50269 - c8b44e1d06417a9"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "closure #1 (Swift.UnsafeMutableRawBufferPointer) -&gt; () in DoorBird.HomeVC.sendSubscribe(unsubscribe: Swift.Bool) -&gt; ()"
+                  moduleName = "DoorBird"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/admin/Desktop/DoorBird/DoorBird/Controller/HomeVC.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "521"
+                  endingLineNumber = "521"
+                  offsetFromSymbolStart = "248">
+               </Location>
+               <Location
+                  uuid = "88D223B4-EB3F-4CCA-8534-025FE5E50269 - c8b44e1d06417a9"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "closure #1 (Swift.UnsafeMutableRawBufferPointer) -&gt; () in DoorBird.HomeVC.sendSubscribe(unsubscribe: Swift.Bool) -&gt; ()"
+                  moduleName = "DoorBird"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/admin/Desktop/DoorBird/DoorBird/Controller/HomeVC.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "521"
+                  endingLineNumber = "521"
+                  offsetFromSymbolStart = "280">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "6D960486-CCD9-4E84-8441-E915C32E1C8A"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "DoorBird/Controller/SodiumEncryption.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "132"
+            endingLineNumber = "132"
+            landmarkName = "decrypt(cypher:cypherLen:nonce:password:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "ED414167-10BF-4CAB-B8FC-8A057DAE5B9D"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "DoorBird/Controller/HomeVC.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "557"
+            endingLineNumber = "557"
+            landmarkName = "imgReceived(_:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "59EB8D27-A82E-4F3C-8055-C6286D451FFD"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "DoorBird/Controller/HomeVC.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "328"
+            endingLineNumber = "328"
+            landmarkName = "processPacket(_:sourceAddress:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "ED0D9785-7B91-43EC-90BE-10F39BC4E911"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "DoorBird/Controller/JpegQueu.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "40"
+            endingLineNumber = "40"
+            landmarkName = "JpegQueue"
+            landmarkType = "3">
+            <Locations>
+               <Location
+                  uuid = "ED0D9785-7B91-43EC-90BE-10F39BC4E911 - 6ca73369fef9b9f5"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "DoorBird.JpegQueue.enqueue(seq: Swift.Int, bb: Foundation.Data, imgListener: DoorBird.ImgListener) -&gt; ()"
+                  moduleName = "DoorBird"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/admin/Desktop/DoorBird/DoorBird/Controller/JpegQueu.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "40"
+                  endingLineNumber = "40"
+                  offsetFromSymbolStart = "1048">
+               </Location>
+               <Location
+                  uuid = "ED0D9785-7B91-43EC-90BE-10F39BC4E911 - 4d7966cf81b367e8"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "closure #1 (Swift.UnsafeRawBufferPointer) -&gt; Swift.Int32 in DoorBird.JpegQueue.enqueue(seq: Swift.Int, bb: Foundation.Data, imgListener: DoorBird.ImgListener) -&gt; ()"
+                  moduleName = "DoorBird"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/admin/Desktop/DoorBird/DoorBird/Controller/JpegQueu.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "40"
+                  endingLineNumber = "40"
+                  offsetFromSymbolStart = "60">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "455664F1-86E0-4F6B-84BB-142427BA12BE"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "DoorBird/Controller/JpegQueu.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "36"
+            endingLineNumber = "36"
+            landmarkName = "JpegQueue"
+            landmarkType = "3">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "D97E91EE-E0FD-4E9D-9917-3EB117B445BE"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "DoorBird/Controller/JpegQueu.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "93"
+            endingLineNumber = "93"
+            landmarkName = "enqueue(seq:data:imgListener:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "F9D7AD67-B3D6-472C-BFF8-A3817527D8F0"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "DoorBird/Controller/JpegQueu.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "114"
+            endingLineNumber = "114"
+            landmarkName = "enqueue(seq:data:imgListener:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "2CD968CF-E077-4DC5-B0BC-5AE7C28F2A9A"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "DoorBird/Controller/JpegQueu.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "109"
+            endingLineNumber = "109"
+            landmarkName = "enqueue(seq:data:imgListener:)"
+            landmarkType = "7">
+            <Locations>
+               <Location
+                  uuid = "2CD968CF-E077-4DC5-B0BC-5AE7C28F2A9A - aebf7f13d7fe07d3"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "DoorBird.JpegQueue.enqueue(seq: Swift.Int, data: Foundation.Data, imgListener: DoorBird.ImgListener) -&gt; ()"
+                  moduleName = "DoorBird"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/admin/Desktop/DoorBird/DoorBird/Controller/JpegQueu.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "110"
+                  endingLineNumber = "110"
+                  offsetFromSymbolStart = "3864">
+               </Location>
+               <Location
+                  uuid = "2CD968CF-E077-4DC5-B0BC-5AE7C28F2A9A - 61ff674dd600c48f"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "closure #3 (Swift.Int) -&gt; Swift.Bool in DoorBird.JpegQueue.enqueue(seq: Swift.Int, data: Foundation.Data, imgListener: DoorBird.ImgListener) -&gt; ()"
+                  moduleName = "DoorBird"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/admin/Desktop/DoorBird/DoorBird/Controller/JpegQueu.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "110"
+                  endingLineNumber = "110"
+                  offsetFromSymbolStart = "16">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "4A5A1AE0-B724-46BC-92A0-87B0D3589063"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "DoorBird/Controller/JpegQueu.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "100"
+            endingLineNumber = "100"
+            landmarkName = "enqueue(seq:data:imgListener:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "29C4291F-CBA1-4EE6-A842-A8F899EA06FD"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "DoorBird/Controller/JpegQueu.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "97"
+            endingLineNumber = "97"
+            landmarkName = "enqueue(seq:data:imgListener:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "2BFE7321-B673-40F6-B4CE-DCE675F19DD5"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "DoorBird/Controller/JpegQueu.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "98"
+            endingLineNumber = "98"
+            landmarkName = "enqueue(seq:data:imgListener:)"
+            landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>

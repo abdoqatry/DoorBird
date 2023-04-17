@@ -14,6 +14,8 @@
 		840DC43829E6DD4B00A6BD15 /* Sodium in Frameworks */ = {isa = PBXBuildFile; productRef = 840DC43729E6DD4B00A6BD15 /* Sodium */; };
 		840DC43B29E7054600A6BD15 /* InfoModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 840DC43A29E7054600A6BD15 /* InfoModel.swift */; };
 		840DC43D29E721D900A6BD15 /* BufferModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 840DC43C29E721D900A6BD15 /* BufferModel.swift */; };
+		842CF12129EC2A6A008DE8F9 /* LibSodiumIOS in Resources */ = {isa = PBXBuildFile; fileRef = 842CF12029EC2A6A008DE8F9 /* LibSodiumIOS */; };
+		842CF12429EC3558008DE8F9 /* decreption.m in Sources */ = {isa = PBXBuildFile; fileRef = 842CF12329EC3558008DE8F9 /* decreption.m */; };
 		845B93D029DC410C009A10C6 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 845B93CF29DC410C009A10C6 /* AppDelegate.swift */; };
 		845B93D929DC410D009A10C6 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 845B93D829DC410D009A10C6 /* Assets.xcassets */; };
 		845B93DC29DC410D009A10C6 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 845B93DA29DC410D009A10C6 /* LaunchScreen.storyboard */; };
@@ -29,6 +31,9 @@
 		840DC43229E6DBFB00A6BD15 /* SodiumEncryption.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SodiumEncryption.swift; sourceTree = "<group>"; };
 		840DC43A29E7054600A6BD15 /* InfoModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InfoModel.swift; sourceTree = "<group>"; };
 		840DC43C29E721D900A6BD15 /* BufferModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BufferModel.swift; sourceTree = "<group>"; };
+		842CF12029EC2A6A008DE8F9 /* LibSodiumIOS */ = {isa = PBXFileReference; lastKnownFileType = folder; path = LibSodiumIOS; sourceTree = "<group>"; };
+		842CF12229EC3557008DE8F9 /* DoorBird-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DoorBird-Bridging-Header.h"; sourceTree = "<group>"; };
+		842CF12329EC3558008DE8F9 /* decreption.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = decreption.m; sourceTree = "<group>"; };
 		845B93CC29DC410C009A10C6 /* DoorBird.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DoorBird.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		845B93CF29DC410C009A10C6 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		845B93D829DC410D009A10C6 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -74,10 +79,12 @@
 		845B93C329DC410C009A10C6 = {
 			isa = PBXGroup;
 			children = (
+				842CF12329EC3558008DE8F9 /* decreption.m */,
 				845B93CE29DC410C009A10C6 /* DoorBird */,
 				845B93CD29DC410C009A10C6 /* Products */,
 				81B285A08F941D855DB46160 /* Pods */,
 				A475A7D952F5957EBB54A790 /* Frameworks */,
+				842CF12229EC3557008DE8F9 /* DoorBird-Bridging-Header.h */,
 			);
 			sourceTree = "<group>";
 		};
@@ -127,6 +134,7 @@
 			isa = PBXGroup;
 			children = (
 				4219AA8E26EE48C816560E4D /* Pods_DoorBird.framework */,
+				842CF12029EC2A6A008DE8F9 /* LibSodiumIOS */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -169,6 +177,7 @@
 				TargetAttributes = {
 					845B93CB29DC410C009A10C6 = {
 						CreatedOnToolsVersion = 14.2;
+						LastSwiftMigration = 1420;
 					};
 				};
 			};
@@ -201,6 +210,7 @@
 				845B93DC29DC410D009A10C6 /* LaunchScreen.storyboard in Resources */,
 				845B93EB29DC43BE009A10C6 /* HomeVC.xib in Resources */,
 				845B93D929DC410D009A10C6 /* Assets.xcassets in Resources */,
+				842CF12129EC2A6A008DE8F9 /* LibSodiumIOS in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -257,6 +267,7 @@
 				845B93D029DC410C009A10C6 /* AppDelegate.swift in Sources */,
 				840DC42F29E6AEA100A6BD15 /* AudioQueue.swift in Sources */,
 				845B93EA29DC43BE009A10C6 /* HomeVC.swift in Sources */,
+				842CF12429EC3558008DE8F9 /* decreption.m in Sources */,
 				840DC43129E6B45E00A6BD15 /* JpegQueu.swift in Sources */,
 				840DC43329E6DBFB00A6BD15 /* SodiumEncryption.swift in Sources */,
 				840DC43B29E7054600A6BD15 /* InfoModel.swift in Sources */,
@@ -398,6 +409,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 9BRR93VHFG;
@@ -417,6 +429,8 @@
 				PRODUCT_BUNDLE_IDENTIFIER = doorbird.smart1.com.DoorBird;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "DoorBird-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -428,6 +442,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 9BRR93VHFG;
@@ -448,6 +463,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				"SWIFT_ACTIVE_COMPILATION_CONDITIONS[arch=*]" = DSODIUM_DEBUG;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "DoorBird-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};

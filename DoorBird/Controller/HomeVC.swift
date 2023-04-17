@@ -35,10 +35,10 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener  {
     }
     
     private var udpSocket: GCDAsyncUdpSocket?
-    private let CLOUD_API_ACCESS_TOKEN = "1dc6a6e11f7c86df5de7245b1974786e9ef62f989e1de0d59866984bb0903c4f"
+    private let CLOUD_API_ACCESS_TOKEN = "8735e74095925dd777206aed08294def230f87263e05f85d74d7095510c838f5"
     private let VIDEO_ENABLED = true
-    private let AUDIO_SPEAKER_ENABLED = true
-    private let AUDIO_MIC_ENABLED = true
+    private let AUDIO_SPEAKER_ENABLED = false
+    private let AUDIO_MIC_ENABLED = false
     private let INFO_URL = "https://api.doorbird.io/live/info"
     private var requestedFlags: Int = 0
     private var currentFlags: Int = 0
@@ -286,8 +286,7 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener  {
             let nonce = packetData.subdata(in: 1..<9)
             let encryptedData = packetData.subdata(in: (nonce.count+1)..<dataLength)
             if let decryptedData = SodiumEncryption.decrypt(
-                encryptionType: SodiumEncryption.EncryptionType.chacha20_poly1305,
-                cypher: [UInt8](encryptedData),
+                cypher: [UInt8](encryptedData), cypherLen: encryptedData.count,
                 nonce: [UInt8](nonce),
                 password: [UInt8](encryptionKey.data(using: .utf8)!)
             ) {
@@ -348,10 +347,12 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener  {
             return
         }
         
+        let x = [109, 149, 120, 111, 85, 50, 92, 152, 201, 220, 212, 176, 112, 47, -34, -45, -29, 15, 21, 11, 21, 9, 3, -23, -8, 14, 49, 76, 112, 56, -51, -87, -121, -167, -243, -340, -419, -358, -281, -224, -166, -119, -106, -72, -48, -10, -5, -5, 43, 41, 41, -13, -78, -102, -99, -156, -174, -135, -168, -124, -64, -31, -96, -140, -199, -245, -242, -192, -155, -127, -96, -117, -138, -158, -195, -267, -263, -258, -277, -291, -282, -210, -152, -42, 62, 151, 274, 372, 363, 270, 162, 26, -90, -159, -141, -154, -173, -156, -144, -81, -57, 5, 78, 75, 50, 2, -69, -83, -171, -243, -218, -200, -189, -192, -169, -182, -206, -168, -118, -72, 40, 143, 252, 373, 427, 415, 428, 413, 388, 305, 186, 92, 22, -65, -79, -40, -41, -105, -165, -178, -127, 2, 148, 245, 226, 172, 18, -71, -119, -228, -277, -262, -158, -67, 59, 170, 251, 290, 262, 234]
+        
         var ulaw = [UInt8](repeating: 0, count: audioData.count)
         for i in 0..<audioData.count {
             // conversion via mapping table from pcm to u-law 8kHz
-            ulaw[i] = UInt8(AudioQueue.l2u[Int(audioData[i]) & 0xffff])
+            ulaw[i] = UInt8(AudioQueue.l2u[x[i] & 0xffff])
             
         }
         
@@ -421,12 +422,13 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener  {
         
             let convertedBuffer = self.convertBuffer(buffer: buffer, from: inputFormat, to: outputFormat)
             let data =  UnsafeBufferPointer(start: convertedBuffer.int16ChannelData![0], count: 160)
+            print(data)
 
             self.transmitAudioData(audioData: Array(data))
 //                }
             
            
-            
+//            audioPlayer.scheduleBuffer(convertedBuffer)
             audioPlayer.play()
             
             audioEngine.prepare()
@@ -466,7 +468,7 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener  {
         for i in 0..<nonceData.count {
             nonceData[i] = UInt8(encryptionNonce >> (i * 8))
         }
-        let cypher = SodiumEncryption.encrypt(encryptionType: .chacha20_poly1305, plain: data, nonce: nonceData, password: Array(encryptionKey.utf8))
+        let cypher = SodiumEncryption.encrypt(plain: data, plainLen: data.count, nonce: nonceData, password: Array(encryptionKey.utf8))
         
         var encryptedPacket = [UInt8](repeating: 0, count: cypher!.count + nonceData.count + 1)
         encryptedPacket[0] = (UdpConstants.PACKET_ENCRYPTION_TYPE_1).rawValue
@@ -553,12 +555,16 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener  {
     
     func imgReceived(_ imgData:Data) {
         print("Image received: \(imgData.count)")
+        print(imgData)
+        let imageData = Data(imgData)
         // Decode JPEG into bitmap to display it in image view
-        if let bitmap = UIImage(data: imgData) {
-            DispatchQueue.main.async {
-                self.liveImageView.image = bitmap
-            }
-        }
+//        if let data = Data(base64Encoded: imgData) {
+//            if let bitmap = UIImage(data: imgData) {
+//                DispatchQueue.main.async {
+                    self.liveImageView.image = UIImage(data: imageData)
+//                }
+//            }
+//        }
     }
     
 

@@ -158,7 +158,7 @@ class AudioQueue {
         let exponent = l2uexp[(Int(uSample) >> 7) & 0xff]
         let mantissa = (Int(uSample) >> (exponent + 3)) & 0x0f
         let compressedByte = ~(Int(sign) | (exponent << 4) | mantissa)
-        return UInt8(Int8(compressedByte))
+        return UInt8((10))
     }
 }
 
