@@ -8,6 +8,7 @@ target 'DoorBird' do
   # Pods for DoorBird
  pod 'Alamofire'
   pod 'SwiftyJSON', '~> 4.2'
-pod 'CocoaAsyncSocket' 
+pod 'CocoaAsyncSocket'
+pod 'Kingfisher', '~> 7.0'
 
 end

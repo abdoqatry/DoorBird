@@ -35,9 +35,9 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener  {
     }
     
     private var udpSocket: GCDAsyncUdpSocket?
-    private let CLOUD_API_ACCESS_TOKEN = "8735e74095925dd777206aed08294def230f87263e05f85d74d7095510c838f5"
+    private let CLOUD_API_ACCESS_TOKEN = "c188efd9e2569f98b79884e84f8005cc0b8949539960c0dfd2ad1360abb63fcc"
     private let VIDEO_ENABLED = true
-    private let AUDIO_SPEAKER_ENABLED = false
+    private let AUDIO_SPEAKER_ENABLED = true
     private let AUDIO_MIC_ENABLED = false
     private let INFO_URL = "https://api.doorbird.io/live/info"
     private var requestedFlags: Int = 0
@@ -276,6 +276,15 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener  {
         processPacket(data, sourceAddress: address)
        
     }
+    
+    func validateJPEGHeader(_ imageData: Data) -> Bool {
+        let expectedHeader: [UInt8] = [0xFF, 0xD8, 0xFF]
+        guard imageData.count >= 3 else {
+            return false
+        }
+        let header = [UInt8](imageData.prefix(3))
+        return header == expectedHeader
+    }
 
     private func processPacket(_ packetData: Data, sourceAddress: Data?) {
         var packetData = packetData
@@ -308,26 +317,40 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener  {
                     // handle audio session invalid state
                 }
             case UdpConstants.PACKET_ULAW.rawValue:
-                var i = 6
+                var i = 0
                 var r = 0
                 let length = 160
-                while i < data.count {
+                while i < length {
                     let type = data[i]
-                    let seqByte1 = Int(data[i+1])
-                    let seqByte2 = Int(data[i+2])
-                    let seqByte3 = Int(data[i+3])
+                    i+=1
+                    let seqByte1 = Int(data[i])
+                    i+=1
+                    let seqByte2 = Int(data[i])
+                    i+=1
+                    let seqByte3 = Int(data[i])
+                    i+=1
                     seq = (seqByte1 << 16) | (seqByte2 << 8) | seqByte3
-                    let state = data[i+4]
-                    let flags = data[i+5]
-                    let ulaw = data.subdata(in: (i+6)..<(i+6+length))
-                    i += 6 + length
+                    let state = data[i]
+                    i+=1
+                    let flags = data[i]
+                    i+=1
+                    print("datt audio = \(data.uint8List)")
+                    let bytes = data.uint8List
+                    let ulaw = data.subdata(in: i..<i+length).withUnsafeBytes { $0.load(as: Int8.self).bigEndian }
+//                    data.subdata(in: (i)..<(i+length)).map { Int8($0) }
+                    print("subdata\(ulaw)")
+                    i += length
 
-                    aq.enqueue(seq: seq, ulaw: [UInt8](ulaw), r: r)
+//                    aq.enqueue(seq: seq, ulaw: ulaw, r: r)
                     r += 1
                 }
             case UdpConstants.PACKET_JPEG_V2.rawValue:
                 let jpegData = data.subdata(in: 6..<dataLength)
-                jq.enqueue(seq: seq, data: jpegData, imgListener:self)
+//                if !validateJPEGHeader(data) {
+//                       print("Invalid JPEG header, skipping image processing")
+//                       return
+//                   }
+                jq.enqueue(seq: seq, data: data, imgListener:self)
             case UdpConstants.PACKET_NO_VIDEO.rawValue:
                 jq.enqueueNoVideo(seq: seq, imgListener: self)
             default:
@@ -556,15 +579,11 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener  {
     func imgReceived(_ imgData:Data) {
         print("Image received: \(imgData.count)")
         print(imgData)
-        let imageData = Data(imgData)
-        // Decode JPEG into bitmap to display it in image view
-//        if let data = Data(base64Encoded: imgData) {
-//            if let bitmap = UIImage(data: imgData) {
-//                DispatchQueue.main.async {
-                    self.liveImageView.image = UIImage(data: imageData)
-//                }
-//            }
-//        }
+            if let bitmap = UIImage(data: imgData) {
+                DispatchQueue.main.async {
+                    self.liveImageView.image = bitmap
+                }
+            }
     }
     
 
