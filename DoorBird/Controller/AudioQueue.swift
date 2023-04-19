@@ -8,6 +8,27 @@
 import Foundation
 import UIKit
 
+struct Frame: Comparable, Hashable {
+    let seq: Int
+    let ulaw: [Int8]
+    let r: Int
+
+    static func < (lhs: Frame, rhs: Frame) -> Bool {
+        lhs.seq < rhs.seq
+    }
+
+    static func == (lhs: Frame, rhs: Frame) -> Bool {
+        lhs.seq == rhs.seq
+    }
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(seq)
+    }
+}
+
+//protocol AudioListener {
+//    func onAudioReceived(_ pcm: [Int16])
+//}
 
 class AudioQueue {
 
@@ -25,143 +46,232 @@ class AudioQueue {
            6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
            6, 6, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,7, 7,7, 7, 7, 7, 7, 7, 7, 7, 7,7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7]
 
-    public static let l2u: [Int8] = generateL2u().map { Int8(bitPattern: $0) }
-
-    class Frame: Comparable, Hashable {
-        let seq: Int
-        let ulaw: [Int8]
-        let r: Int
-
-        init(seq: Int, ulaw: [Int8], r: Int) {
-            self.seq = seq
-            self.ulaw = ulaw
-            self.r = r
-        }
-
-        static func < (lhs: Frame, rhs: Frame) -> Bool {
-            return lhs.seq < rhs.seq
-        }
-
-        static func == (lhs: Frame, rhs: Frame) -> Bool {
-            return lhs.seq == rhs.seq
-        }
-
-        func hash(into hasher: inout Hasher) {
-            hasher.combine(seq)
-        }
-    }
+    public static let l2u: [Int8] = generateL2u()
+//        .map { Int8(bitPattern: $0) }
 
 
-    private var buffer = Heap<Frame>(comparer: { $0.seq < $1.seq })
-    private var decodeQueue = [AudioQueue.Frame]()
-    var audioCount = 0
-    var lastAudioSeq = 0
-    var lastDelivered = 0
-    let decodeQueueLock = NSLock()
+   
+    private let semaphore = DispatchSemaphore(value: 1)
+    private var buffer = PriorityQueue<Frame>()
+    private var decodeQueue = [Frame]()
+    private var audioCount = 0
+    private var lastAudioSeq = 0
+    private var lastDelivered = 0
+    private let decodeQueueLock = NSLock()
 
     func reset() {
         decodeQueueLock.lock()
-                defer {
-        decodeQueueLock.unlock()
+        defer {
+            decodeQueueLock.unlock()
         }
 
-        buffer.clear()
+        buffer = PriorityQueue<Frame>()
         decodeQueue.removeAll()
         audioCount = 0
         lastAudioSeq = 0
     }
-
+    
     func enqueue(seq: Int, ulaw: [Int8], r: Int) {
-        if seq < 50 * 5 && lastDelivered > seq + 5 * 50 {
-            // assume reset
-            lastDelivered = 0
-        }
-        if seq < lastDelivered {
-            return
-        }
+          if seq < 50 * 5 && lastDelivered > seq + 5 * 50 {
+              // assume reset
+              lastDelivered = 0
+          }
+
+          if seq < lastDelivered {
+              return
+          }
 
         let f = Frame(seq: seq, ulaw: ulaw, r: r)
-        if self.buffer.items.contains(where: { $0.seq == f.seq }) {
+           if buffer.peek() == f {
                return
            }
-        buffer.insert(f)
-        while (buffer.count == 0) && (buffer.peek()?.seq == lastDelivered + 1 || buffer.count > 30) {
-            audioCount += 1
-            let sf = buffer.remove()!
-            lastDelivered = sf.seq
-//            synchronized(decodeQueue) {
-//                decodeQueue.offer(sf)
-//                decodeQueue.notify()
-//            }
-            DispatchQueue.global(qos: .userInteractive).sync {
-                       self.decodeQueue.append(sf)
-//                self.decodeQueue.notify()
-                   }
 
-        }
-    }
-
+          buffer.enqueue(f)
+          while buffer.count > 0 && (buffer.peek()?.seq == lastDelivered + 1 || buffer.count > 30) {
+              audioCount += 1
+              let sf = buffer.dequeue()!
+              lastDelivered = sf.seq
+              decodeQueueLock.lock()
+              decodeQueue.append(sf)
+              decodeQueueLock.unlock()
+          }
+      }
+    
     func startDecoding(audioListener: @escaping AudioListener) {
         reset()
         DispatchQueue.global().async {
             while true {
                 var ulawFrame: Frame?
-                DispatchQueue.global(qos: .userInteractive).sync {
-                                if self.decodeQueue.isEmpty {
-                                    return
-                    }
+                self.decodeQueueLock.lock()
+                if self.decodeQueue.isEmpty {
+                    self.decodeQueueLock.unlock()
+                    Thread.sleep(forTimeInterval: 2)
+                    continue
+                } else {
                     ulawFrame = self.decodeQueue.removeFirst()
+                    self.decodeQueueLock.unlock()
                 }
-
+                
                 guard let frame = ulawFrame else { return }
                 let ulawLength = frame.ulaw.count
                 let downsampling = 1
-                var pcm = [Int16](repeating: 0, count: ulawLength + ulawLength % downsampling)
-
+                var pcm = [Int](repeating: 0, count: ulawLength + ulawLength % downsampling)
                 let gainFactor = 1
                 for (p, u) in stride(from: 0, to: pcm.count, by: downsampling).enumerated() {
                     var e = Int(Double(AudioQueue.u2l[Int(frame.ulaw[min(u, ulawLength - 1)]) & 0xff]) * Double(gainFactor))
+
                     if e > 0x7fff {
                         e = 0x7fff
                     } else if e < -0x7fff {
                         e = -0x7fff
                     }
-                    pcm[p] = Int16(e)
+                    pcm[p] = Int(e)
                 }
-
-                audioListener(pcm)
+                
+                audioListener(pcm.map { Int16($0) })
             }
         }
     }
-
-    private static func generateL2u() -> [UInt8] {
-        var result = [UInt8](repeating: 0, count: 64 * 1024)
+    
+    static func generateL2u() -> [Int8] {
+        var result = [Int8](repeating: 0, count: 64 * 1024)
         for i in 0..<result.count {
-            result[i] = l2u(Int16(i))
+            result[i] = Int8(l2uByte(sample: i))
         }
         return result
     }
 
-    private static func l2u(_ sample: Int16) -> UInt8 {
-        print(sample.hashValue)
-        let cBias: Int16 = 0x84
-        let cClip: Int16 = 32635
-        let sign = ((~sample) >> 8) & 0x80
-        var uSample = sample
+    static func l2uByte(sample: Int) -> Int8 {
+        let cBias = 0x84
+        let cClip = 32635
+        var sign = (~sample >> 8) & 0x80
+        var value = sample
         if sign == 0 {
-            uSample = -sample
+            value = -value
         }
-        if uSample > cClip {
-            uSample = cClip
+        if value > cClip {
+            value = cClip
         }
-        uSample = uSample + cBias
-        let exponent = l2uexp[(Int(uSample) >> 7) & 0xff]
-        let mantissa = (Int(uSample) >> (exponent + 3)) & 0x0f
-        let compressedByte = ~(Int(sign) | (exponent << 4) | mantissa)
-        return UInt8((10))
+        value += cBias
+        let exponent = l2uexp[(value >> 7) & 0xff]
+        let mantissa = (value >> (exponent + 3)) & 0x0f
+        let compressedByte = ~(sign | (exponent << 4) | mantissa)
+        return Int8(bitPattern:UInt8(compressedByte))
     }
+    
+//
+//    func enqueue(seq: Int, ulaw: [Int8], r: Int) {
+//        if seq < 50 * 5 && lastDelivered > seq + 5 * 50 {
+//            // assume reset
+//            lastDelivered = 0
+//        }
+//        if seq < lastDelivered {
+//            return
+//        }
+//
+//        let f = Frame(seq: seq, ulaw: ulaw, r: r)
+//        if self.buffer.items.contains(where: { $0.seq == f.seq }) {
+//               return
+//           }
+//        buffer.insert(f)
+//        while (buffer.count == 0) && (buffer.peek()?.seq == lastDelivered + 1 || buffer.count > 30) {
+//            audioCount += 1
+//            let sf = buffer.remove()!
+//            lastDelivered = sf.seq
+////            synchronized(decodeQueue) {
+////                decodeQueue.offer(sf)
+////                decodeQueue.notify()
+////            }
+//            DispatchQueue.global(qos: .userInteractive).sync {
+//                       self.decodeQueue.append(sf)
+////                self.decodeQueue.notify()
+//                   }
+//
+//        }
+//    }
+
+//    func startDecoding(audioListener: @escaping AudioListener) {
+//        reset()
+//        DispatchQueue.global().async {
+//            while true {
+//                var ulawFrame: Frame?
+//                DispatchQueue.global(qos: .userInteractive).sync {
+//                                if self.decodeQueue.isEmpty {
+//                                    return
+//                    }
+//                    ulawFrame = self.decodeQueue.removeFirst()
+//                }
+//
+//                guard let frame = ulawFrame else { return }
+//                let ulawLength = frame.ulaw.count
+//                let downsampling = 1
+//                var pcm = [Int16](repeating: 0, count: ulawLength + ulawLength % downsampling)
+//
+//                let gainFactor = 1
+//                for (p, u) in stride(from: 0, to: pcm.count, by: downsampling).enumerated() {
+//                    var e = Int(Double(AudioQueue.u2l[Int(frame.ulaw[min(u, ulawLength - 1)]) & 0xff]) * Double(gainFactor))
+//                    if e > 0x7fff {
+//                        e = 0x7fff
+//                    } else if e < -0x7fff {
+//                        e = -0x7fff
+//                    }
+//                    pcm[p] = Int16(e)
+//                }
+//
+//                audioListener(pcm)
+//            }
+//        }
+//    }
+//
+//    private static func generateL2u() -> [UInt8] {
+//        var result = [UInt8](repeating: 0, count: 64 * 1024)
+//        for i in 0..<result.count {
+//            result[i] = l2u(Int16(i))
+//        }
+//        return result
+//    }
+//
+//    private static func l2u(_ sample: Int16) -> UInt8 {
+//        print(sample.hashValue)
+//        let cBias: Int16 = 0x84
+//        let cClip: Int16 = 32635
+//        let sign = ((~sample) >> 8) & 0x80
+//        var uSample = sample
+//        if sign == 0 {
+//            uSample = -sample
+//        }
+//        if uSample > cClip {
+//            uSample = cClip
+//        }
+//        uSample = uSample + cBias
+//        let exponent = l2uexp[(Int(uSample) >> 7) & 0xff]
+//        let mantissa = (Int(uSample) >> (exponent + 3)) & 0x0f
+//        let compressedByte = ~(Int(sign) | (exponent << 4) | mantissa)
+//        return UInt8((10))
+//    }
 }
 
+
+struct PriorityQueue<T: Comparable> {
+    private var elements = [T]()
+
+    var count: Int {
+        return elements.count
+    }
+
+    mutating func enqueue(_ element: T) {
+        elements.append(element)
+        elements.sort()
+    }
+
+    mutating func dequeue() -> T? {
+        return elements.isEmpty ? nil : elements.removeFirst()
+    }
+
+    func peek() -> T? {
+        return elements.first
+    }
+}
 
 
 public class Heap<T> {

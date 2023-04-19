@@ -11,7 +11,7 @@ import AVFoundation
 import CocoaAsyncSocket
 
 
-class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener  {
+class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener{
     
     var udpPort: UInt16 = 6999
     var udpAddress = "apiorun.doorbird.net"
@@ -35,7 +35,7 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener  {
     }
     
     private var udpSocket: GCDAsyncUdpSocket?
-    private let CLOUD_API_ACCESS_TOKEN = "c188efd9e2569f98b79884e84f8005cc0b8949539960c0dfd2ad1360abb63fcc"
+    private let CLOUD_API_ACCESS_TOKEN = "d42256a66d8f8fdd6905525a62f69c7d864422e565aa7e00cce6c3d0bbaecfff"
     private let VIDEO_ENABLED = true
     private let AUDIO_SPEAKER_ENABLED = true
     private let AUDIO_MIC_ENABLED = false
@@ -101,14 +101,16 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener  {
                 try!self.audioEngine.start()
             audioPlayer.play()
                         
+        let outputFormat = AVAudioFormat(commonFormat: .pcmFormatInt16,
+                                            sampleRate: 8000,
+                                            channels: 1,
+                                            interleaved: false)!
+                
+            let bufferSize = inputFormat.sampleRate * 0.1
             self.aq.startDecoding(audioListener: { buffer in
         guard let pcmBuffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: AVAudioFrameCount(buffer.count)) else { return }
-            pcmBuffer.frameLength = pcmBuffer.frameCapacity
-        let pcmBufferPointer = pcmBuffer.int16ChannelData![0]
-                for i in 0 ..< buffer.count {
-                    pcmBufferPointer[i] = Int16(buffer[i])
-                }
-                            audioPlayer.scheduleBuffer(pcmBuffer)
+                playAudio(pcm: buffer)
+                            
                         })
                     }
                     
@@ -127,7 +129,23 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener  {
         }
         
     }
-
+    
+    
+    func playAudio(pcm: [Int16]) {
+        print("pcm 16 = \(pcm)")
+        let format = AVAudioFormat(commonFormat: .pcmFormatFloat32, sampleRate: 16000, channels: 1, interleaved: true)!
+          let buffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: AVAudioFrameCount(pcm.count))!
+          buffer.floatChannelData?.pointee.withMemoryRebound(to: Float.self, capacity: pcm.count) {
+              memcpy($0, pcm, pcm.count * MemoryLayout<Int16>.size)
+          }
+        print("buffer as pcm 32 \(buffer)")
+          let player = AVAudioPlayerNode()
+        audioEngine.attach(player)
+        audioEngine.connect(player, to: audioEngine.mainMixerNode, format: format)
+          player.scheduleBuffer(buffer, completionHandler: nil)
+          try! audioEngine.start()
+          player.play()
+    }
       override func viewDidLayoutSubviews() {
           super.viewDidLayoutSubviews()
           liveImageView.frame = view.bounds
@@ -190,45 +208,6 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener  {
         
     }
     
-//    private func runCamera() {
-//        do {
-//            udpSocket = try! GCDAsyncUdpSocket(delegate: self, delegateQueue: DispatchQueue.main)
-//            try? udpSocket?.bind(toPort: 0)
-//            try? udpSocket?.beginReceiving()
-//
-////            let dpIn = GCDAsyncUdpPacket(data: Data(count: 16 * 1024), withTimeout: -1, tag: 0)
-//            if sessionId.starts(with: "Xnotrung") {
-//                // nobody rang and watch always permission is not given to the user
-//                udpSocket?.close()
-//                return
-//            }
-//            var lastSubscribe: TimeInterval = 0
-//                    aq.reset()
-////            dpIn.address = udpAddress
-////            var lastSubscribe: UInt64 = 0
-//            aq.reset()
-//            while true {
-//                if let socket = udpSocket, socket.isClosed() {
-//                    lastSubscribe = 0
-//                    try! udpSocket?.bind(toPort: 0)
-//                }
-//                // if the requested flags did not change, only refresh the subscription every 15 seconds,
-//                // if flags changed, it should be done earlier
-//                if lastSubscribe + (currentFlags == requestedFlags ? 15000 : 500) < Date().timeIntervalSince1970 {
-//                    lastSubscribe = Date().timeIntervalSince1970
-//                    sendSubscribe(unsubscribe: false)
-//                }
-//                if let packet = try? udpSocket?.receiveOnce() {
-//                    processPacket(packet)
-//                }
-//
-//            }
-//        } catch {
-//            // add exception handling / reconnects / ui information
-//            print(error)
-//        }
-//    }
-    
     private func runCamera() {
         do {
             udpSocket = try GCDAsyncUdpSocket(delegate: self, delegateQueue: DispatchQueue.main)
@@ -257,14 +236,6 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener  {
                     sendSubscribe(unsubscribe: false)
                 }
                 
-              
-//                // Receive data from the socket.
-//                var data = Data()
-//                var sourceAddress: Data?
-//                udpSocket?.receive(&data, fromAddress: &sourceAddress, withTimeout: -1, tag: 0)
-//
-//                // Pass the received data to the packet processing function.
-//                processPacket(data: data, sourceAddress: sourceAddress)
             }
         } catch {
             // Handle errors, e.g. by reconnecting.
@@ -335,21 +306,22 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener  {
                     let flags = data[i]
                     i+=1
                     print("datt audio = \(data.uint8List)")
-                    let bytes = data.uint8List
-                    let ulaw = data.subdata(in: i..<i+length).withUnsafeBytes { $0.load(as: Int8.self).bigEndian }
-//                    data.subdata(in: (i)..<(i+length)).map { Int8($0) }
-                    print("subdata\(ulaw)")
+                    print("count audio = \(data.count)")
+//                        let ulaw = data.subdata(in: (i)..<(i+length)).map { Int8($0) }
+                    let subdata = data.subdata(in: i..<i+length)
+                    let bufferPointer = UnsafeMutableBufferPointer<Int8>.allocate(capacity: length)
+                    defer { bufferPointer.deallocate() }
+                    _ = subdata.copyBytes(to: bufferPointer)
+                    let ulaw = Array(bufferPointer)
+                        print("subdata\(ulaw)")
+                    
                     i += length
 
-//                    aq.enqueue(seq: seq, ulaw: ulaw, r: r)
+                    aq.enqueue(seq: seq, ulaw: ulaw, r: r)
                     r += 1
                 }
             case UdpConstants.PACKET_JPEG_V2.rawValue:
                 let jpegData = data.subdata(in: 6..<dataLength)
-//                if !validateJPEGHeader(data) {
-//                       print("Invalid JPEG header, skipping image processing")
-//                       return
-//                   }
                 jq.enqueue(seq: seq, data: data, imgListener:self)
             case UdpConstants.PACKET_NO_VIDEO.rawValue:
                 jq.enqueueNoVideo(seq: seq, imgListener: self)
@@ -375,7 +347,7 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener  {
         var ulaw = [UInt8](repeating: 0, count: audioData.count)
         for i in 0..<audioData.count {
             // conversion via mapping table from pcm to u-law 8kHz
-            ulaw[i] = UInt8(AudioQueue.l2u[x[i] & 0xffff])
+            ulaw[i] = UInt8(AudioQueue.l2u[Int(audioData[i]) & 0xffff])
             
         }
         
@@ -585,6 +557,8 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener  {
                 }
             }
     }
+    
+
     
 
 }
