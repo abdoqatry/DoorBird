@@ -19,7 +19,6 @@ class JpegQueue {
     private var vPresent = IndexSet(integersIn: 0..<256)
     private var vData = Data(count: 64 * 1024)
 
-
     func reset() {
         vSeq = 0
     }
@@ -74,69 +73,6 @@ class JpegQueue {
             }
         }
     }
-//
-//        var vSeq = 0
-//    var vPresent = IndexSet(integersIn: 0..<256)
-//        var vData = Data(count: 64 * 1024)
-//
-//        func reset() {
-//            vSeq = 0
-//        }
-//
-//        func enqueue(seq: Int, data: Data, imgListener: ImgListener) {
-//            if seq > vSeq {
-//                vPresent = IndexSet()
-//                vSeq = seq
-//                vData =  Data(count: 64 * 1024)
-//            }
-//            if seq == vSeq {
-//                var index = 6
-//                print(data.count)
-//
-//                let datalen = data.subdata(in: index..<index+4)
-//                       let imageLen = datalen.withUnsafeBytes { $0.load(as: Int32.self) }
-//                       index += 4
-//
-//                    if imageLen != vData.count {
-//                        vData = Data()
-//                        vPresent = IndexSet()
-//                       }
-//
-//                       guard data.count >= index + 4 else {
-//                           print("Invalid data length")
-//                           return
-//                       }
-//                       let imageOffsetlen = data.subdata(in: index..<index+4)
-//                       var imageOffset = imageOffsetlen.withUnsafeBytes { $0.load(as: Int32.self) }
-//                       index += 4
-//                       var remaining = data.count - index
-//
-//                       while remaining > 0 {
-//                           let blockSize = min(remaining, 256)
-//                           let viewedData = data.subdata(in: index..<index+blockSize)
-////                           vData.replaceSubrange(Int(imageOffset)..<Int(imageOffset)+blockSize, with: viewedData)
-//                    if Int(imageOffset) + blockSize <= vData.count {
-//                        vData.replaceSubrange(Int(imageOffset)..<Int(imageOffset)+blockSize, with: viewedData)
-//                    } else {
-//                               print("Error: Index out of bounds")
-//                    }
-//                    index += blockSize
-//                    remaining = data.count - index
-//                vPresent.insert(integersIn: Int(imageOffset) / 256 ..< (Int(imageOffset) + blockSize) / 256)
-////                         vPresent[Int(imageOffset) / 256] = true
-//                    imageOffset += Int32(blockSize)
-//                       }
-//                print("vPresent: \(vPresent)")
-//                print("imageLen: \(imageLen)")
-//                if vPresent.count >= Int(imageLen) / 256 {
-//                    // Image Complete
-//                    imgListener.imgReceived(vData.subdata(in: 0..<Data.Index(imageLen)))
-//                    vData = Data(count: 64 * 1024)
-//                    vPresent = IndexSet()
-//                    vSeq += 1
-//                }
-//            }
-//        }
     
     /**
      * Should not be necessary for normal use of doorstations with camera
@@ -154,10 +90,6 @@ class JpegQueue {
     }
 
 }
-//
-//// ByteBuffer implementation
-//
-//
 
 // bitSet
 struct BitSet {
@@ -198,50 +130,6 @@ struct BitSet {
         bits = Array(repeating: 0, count: bits.count)
     }
 }
-
-//class ByteBuffer {
-//    private var buffer: [UInt8]
-//    private var position = 0
-//
-//    init(capacity: Int) {
-//        buffer = [UInt8](repeating: 0, count: capacity)
-//    }
-//
-//    func put(_ byte: UInt8) {
-//        ensureCapacity(position + 1)
-//        buffer[position] = byte
-//        position += 1
-//    }
-//
-//    func putInt32(_ value: Int32) {
-//        let bytes = withUnsafeBytes(of: value) { Array($0) }
-//        ensureCapacity(position + bytes.count)
-//        buffer[position..<position+bytes.count] = bytes
-//        position += bytes.count
-//    }
-//
-//    func get() -> UInt8 {
-//        let byte = buffer[position]
-//        position += 1
-//        return byte
-//    }
-//
-//    func getInt32() -> Int32 {
-//        let bytes = Array(buffer[position..<position+4])
-//        let value = bytes.withUnsafeBytes { $0.load(as: Int32.self) }
-//        position += 4
-//        return value
-//    }
-//
-//    private func ensureCapacity(_ minCapacity: Int) {
-//        if buffer.count < minCapacity {
-//            let newCapacity = max(buffer.count * 2, minCapacity)
-//            buffer += [UInt8](repeating: 0, count: newCapacity - buffer.count)
-//        }
-//    }
-//}
-
-
 
 extension Int {
     var byteSize: String {

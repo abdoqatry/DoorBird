@@ -9,6 +9,9 @@ import UIKit
 import Network
 import AVFoundation
 import CocoaAsyncSocket
+//import Cocoa
+import Accelerate
+//import PlaygroundSupport
 
 
 class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener{
@@ -35,7 +38,7 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener{
     }
     
     private var udpSocket: GCDAsyncUdpSocket?
-    private let CLOUD_API_ACCESS_TOKEN = "d42256a66d8f8fdd6905525a62f69c7d864422e565aa7e00cce6c3d0bbaecfff"
+    private let CLOUD_API_ACCESS_TOKEN = "49261507d17dc6da7c56f5e044db1b6c7011f88d3cc0de755a08f89bf1dc38a2"
     private let VIDEO_ENABLED = true
     private let AUDIO_SPEAKER_ENABLED = true
     private let AUDIO_MIC_ENABLED = false
@@ -55,7 +58,7 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener{
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+        askPermissionIfNeeded()
         view.backgroundColor = .white
         liveImageView = UIImageView()
         liveImageView.contentMode = .scaleAspectFit
@@ -77,7 +80,7 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener{
         let audioSession = AVAudioSession.sharedInstance()
         do {
             try audioSession.setCategory(.playAndRecord, options: [.defaultToSpeaker])
-            try audioSession.setMode(.voiceChat)
+            try audioSession.setMode(.default)
             try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
         } catch {
             print("Failed to set up audio session: \(error)")
@@ -89,8 +92,8 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener{
                 if success {
             if AUDIO_SPEAKER_ENABLED {
            
-            let format = AVAudioFormat(commonFormat: .pcmFormatInt16, sampleRate: 8000, channels: 1, interleaved: false)!
-                print(format)
+//            let format = AVAudioFormat(commonFormat: .pcmFormatInt16, sampleRate: 8000, channels: 1, interleaved: false)!
+//                print(format)
                 let input = self.audioEngine.inputNode
                 let bus = 0
                 let inputFormat = input.inputFormat(forBus: bus)
@@ -102,15 +105,29 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener{
             audioPlayer.play()
                         
         let outputFormat = AVAudioFormat(commonFormat: .pcmFormatInt16,
-                                            sampleRate: 8000,
+                                            sampleRate: 44100,
                                             channels: 1,
                                             interleaved: false)!
                 
             let bufferSize = inputFormat.sampleRate * 0.1
             self.aq.startDecoding(audioListener: { buffer in
-        guard let pcmBuffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: AVAudioFrameCount(buffer.count)) else { return }
-                playAudio(pcm: buffer)
+//                let int8 = self.int16ToUInt8(buffer)
+        guard let pcmBuffer = AVAudioPCMBuffer(pcmFormat: outputFormat, frameCapacity: AVAudioFrameCount(buffer.count)) else { return }
+                print("buffer is = \(buffer)")
+           
+//                self.setupAudioPlayer(buffer)
+                self.playAudio(pcm: buffer)
+//                pcmBuffer.frameLength = pcmBuffer.frameCapacity
+//                let pcmBufferPointer = pcmBuffer.int16ChannelData![0]
+//                    for i in 0 ..< buffer.count {
+//                        pcmBufferPointer[i] = buffer[i]
+//                    }
+//                audioPlayer.volume = 0.5
+//                audioPlayer.scheduleBuffer(pcmBuffer)
+//                audioPlayer.play()
+//                Thread.sleep(forTimeInterval: 2.0)
                             
+                
                         })
                     }
                     
@@ -129,11 +146,90 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener{
         }
         
     }
+
+    func int16ToUInt8(_ int16Array: [Int16]) -> [UInt8] {
+        var uint8Array = [UInt8]()
+        for int16Value in int16Array {
+            let clampedValue = max(-32768, min(32767, int16Value)) // Clamp value to signed 16-bit range
+            let bytes: [UInt8] = [
+                UInt8(clampedValue & 0xff),
+                UInt8((clampedValue >> 8) & 0xff)
+            ]
+            uint8Array.append(contentsOf: bytes)
+        }
+        return uint8Array
+    }
     
+    func askPermissionIfNeeded() {
+        switch AVAudioSession.sharedInstance().recordPermission {
+        case AVAudioSession.RecordPermission.granted:
+            print("Permission granted")
+        case AVAudioSession.RecordPermission.denied:
+            print("Pemission denied")
+        case AVAudioSession.RecordPermission.undetermined:
+            print("Request permission here")
+            AVAudioSession.sharedInstance().requestRecordPermission({ (granted) in
+                // Handle granted
+            })
+        @unknown default: break
+            
+        }
+        
+    }
+
+    func setupAudioPlayer(_ int16Buffer: [Int16]){
+        var pcmFloatData: [Float] = []
+        
+            let audioFormat = AVAudioFormat(standardFormatWithSampleRate: 44100, channels: 1)!
+            let frameCapacity = AVAudioFrameCount(int16Buffer.count)
+            if let pcmBuf = AVAudioPCMBuffer(pcmFormat: audioFormat, frameCapacity: frameCapacity) {
+                let monoChannel = pcmBuf.floatChannelData![0]
+                pcmFloatData = [Float](repeating: 0.0, count: int16Buffer.count)
+                
+                // Int16 ranges from -32768 to 32767 -- we want to convert and scale these to Float values between -1.0 and 1.0
+                var scale = Float(Int16.max) + 1.0
+                vDSP_vflt16(int16Buffer, 1, &pcmFloatData, 1, vDSP_Length(int16Buffer.count)) // Int16 to Float
+                vDSP_vsdiv(pcmFloatData, 1, &scale, &pcmFloatData, 1, vDSP_Length(int16Buffer.count)) // divide by scale
+
+                memcpy(monoChannel, pcmFloatData, MemoryLayout<Float>.size * Int(int16Buffer.count))
+                pcmBuf.frameLength = frameCapacity
+                
+                let audioPlayer = AVAudioPlayerNode()
+//                let audioEngine = AVAudioEngine()
+                audioEngine.attach(audioPlayer)
+                let audioOutputNode = audioEngine.outputNode
+                let audioMixer = audioEngine.mainMixerNode
+                audioEngine.connect(audioPlayer, to: audioOutputNode, format: pcmBuf.format)
+                audioPlayer.volume = 1
+                
+                let audioSession = AVAudioSession.sharedInstance()
+                
+                do {
+                try audioSession.setCategory(.playAndRecord)
+                
+                try audioSession.overrideOutputAudioPort(.speaker)
+                } catch let error {
+                    print("Error setting audio session category: \(error.localizedDescription)")
+                }
+                
+                audioPlayer.scheduleBuffer(pcmBuf)
+               
+                do {
+                     audioEngine.prepare()
+                    try audioEngine.start()
+                } catch let error {
+                    print("Error starting audio engine: \(error.localizedDescription)")
+//                    return nil
+                }
+                audioPlayer.play()
+//                Thread.sleep(forTimeInterval: 2.0)
+            }
+    }
     
     func playAudio(pcm: [Int16]) {
         print("pcm 16 = \(pcm)")
-        let format = AVAudioFormat(commonFormat: .pcmFormatFloat32, sampleRate: 16000, channels: 1, interleaved: true)!
+        
+        let format = AVAudioFormat(commonFormat: .pcmFormatFloat32, sampleRate: 8000, channels: 1, interleaved: true)!
           let buffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: AVAudioFrameCount(pcm.count))!
           buffer.floatChannelData?.pointee.withMemoryRebound(to: Float.self, capacity: pcm.count) {
               memcpy($0, pcm, pcm.count * MemoryLayout<Int16>.size)
@@ -142,7 +238,18 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener{
           let player = AVAudioPlayerNode()
         audioEngine.attach(player)
         audioEngine.connect(player, to: audioEngine.mainMixerNode, format: format)
-          player.scheduleBuffer(buffer, completionHandler: nil)
+        player.volume = 1
+        let audioSession = AVAudioSession.sharedInstance()
+        
+        do {
+        try audioSession.setCategory(.playAndRecord)
+        
+        try audioSession.overrideOutputAudioPort(.speaker)
+        } catch let error {
+            print("Error setting audio session category: \(error.localizedDescription)")
+        }
+          player.scheduleBuffer(buffer)
+               audioEngine.prepare()
           try! audioEngine.start()
           player.play()
     }
@@ -177,7 +284,6 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener{
 
         print(CLOUD_API_ACCESS_TOKEN)
 
-        var success = false
         let task = URLSession.shared.dataTask(with: request) { (data, response, error) in
             guard let httpResponse = response as? HTTPURLResponse,
                   httpResponse.statusCode == 200, let data = data else {
@@ -258,7 +364,7 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener{
     }
 
     private func processPacket(_ packetData: Data, sourceAddress: Data?) {
-        var packetData = packetData
+        let packetData = packetData
         var dataLength = packetData.count
         let type = packetData[0]
         var data: Data? = nil
@@ -275,7 +381,7 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener{
             }
         }
         if let data = data {
-            var type = data[0]
+            let type = data[0]
             var seq = Int((UInt32(data[1]) << 16) | (UInt32(data[2]) << 8) | UInt32(data[3]))
             let state = data[4]
             let flags = data[5]
@@ -347,7 +453,7 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener{
         var ulaw = [UInt8](repeating: 0, count: audioData.count)
         for i in 0..<audioData.count {
             // conversion via mapping table from pcm to u-law 8kHz
-            ulaw[i] = UInt8(AudioQueue.l2u[Int(audioData[i]) & 0xffff])
+            ulaw[i] = UInt8(AudioQueue.l2u[Int(x[i]) & 0xffff])
             
         }
         
@@ -458,10 +564,11 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener{
         if data.count < 4 {
             throw NSError(domain: "invalid packet", code: data.count, userInfo: nil)
         }
-
+//        encryptionNonce = 1
         var nonceData = [UInt8](repeating: 0, count: 8)
         for i in 0..<nonceData.count {
             nonceData[i] = UInt8(encryptionNonce >> (i * 8))
+            print("encryptionNonce = \(encryptionNonce)")
         }
         let cypher = SodiumEncryption.encrypt(plain: data, plainLen: data.count, nonce: nonceData, password: Array(encryptionKey.utf8))
         
