@@ -92,68 +92,68 @@ class JpegQueue {
 }
 
 // bitSet
-struct BitSet {
-    private var bits: [UInt64]
-    
-    init(_ size: Int) {
-        bits = Array(repeating: 0, count: (size + 63) / 64)
-    }
-    
-    subscript(index: Int) -> Bool {
-        get {
-            precondition(index >= 0 && index < bits.count * 64, "Index out of range")
-            return (bits[index / 64] & (1 << (index % 64))) != 0
-        }
-        set {
-            precondition(index >= 0 && index < bits.count * 64, "Index out of range")
-            if newValue {
-                bits[index / 64] |= (1 << (index % 64))
-            } else {
-                bits[index / 64] &= ~(1 << (index % 64))
-            }
-        }
-    }
-    
-    func firstIndex(of value: Bool) -> Int? {
-        let mask = value ? 0xffffffff : 0x0
-        for i in 0..<bits.count {
-            let bitSet = bits[i]
-            if bitSet != mask {
-                let bitIndex = bitSet.trailingZeroBitCount
-                return i * 64 + bitIndex
-            }
-        }
-        return nil
-    }
-    
-    mutating func clearAll() {
-        bits = Array(repeating: 0, count: bits.count)
-    }
-}
+//struct BitSet {
+//    private var bits: [UInt64]
+//
+//    init(_ size: Int) {
+//        bits = Array(repeating: 0, count: (size + 63) / 64)
+//    }
+//
+//    subscript(index: Int) -> Bool {
+//        get {
+//            precondition(index >= 0 && index < bits.count * 64, "Index out of range")
+//            return (bits[index / 64] & (1 << (index % 64))) != 0
+//        }
+//        set {
+//            precondition(index >= 0 && index < bits.count * 64, "Index out of range")
+//            if newValue {
+//                bits[index / 64] |= (1 << (index % 64))
+//            } else {
+//                bits[index / 64] &= ~(1 << (index % 64))
+//            }
+//        }
+//    }
+//
+//    func firstIndex(of value: Bool) -> Int? {
+//        let mask = value ? 0xffffffff : 0x0
+//        for i in 0..<bits.count {
+//            let bitSet = bits[i]
+//            if bitSet != mask {
+//                let bitIndex = bitSet.trailingZeroBitCount
+//                return i * 64 + bitIndex
+//            }
+//        }
+//        return nil
+//    }
+//
+//    mutating func clearAll() {
+//        bits = Array(repeating: 0, count: bits.count)
+//    }
+//}
 
-extension Int {
-    var byteSize: String {
-        return ByteCountFormatter().string(fromByteCount: Int64(self))
-    }
-}
-
-
-extension Data {
-    func readInteger<T: FixedWidthInteger>(at index: Int) -> T {
-        var value: T = 0
-        self.withUnsafeBytes { bytes in
-            memcpy(&value, bytes.baseAddress?.advanced(by: index), MemoryLayout<T>.size)
-        }
-        return value
-    }
-}
+//extension Int {
+//    var byteSize: String {
+//        return ByteCountFormatter().string(fromByteCount: Int64(self))
+//    }
+//}
 
 
-extension Data {
-    var uint8List: [UInt8] {
-        return [UInt8](self)
-    }
-}
+//extension Data {
+//    func readInteger<T: FixedWidthInteger>(at index: Int) -> T {
+//        var value: T = 0
+//        self.withUnsafeBytes { bytes in
+//            memcpy(&value, bytes.baseAddress?.advanced(by: index), MemoryLayout<T>.size)
+//        }
+//        return value
+//    }
+//}
+
+
+//extension Data {
+//    var uint8List: [UInt8] {
+//        return [UInt8](self)
+//    }
+//}
 
 
 
