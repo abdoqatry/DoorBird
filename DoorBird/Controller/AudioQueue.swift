@@ -102,7 +102,7 @@ class AudioQueue {
                 self.decodeQueueLock.lock()
                 if self.decodeQueue.isEmpty {
                     self.decodeQueueLock.unlock()
-                    Thread.sleep(forTimeInterval: 2)
+//                    Thread.sleep(forTimeInterval: 0.01)
                     continue
                 } else {
                     ulawFrame = self.decodeQueue.removeFirst()
