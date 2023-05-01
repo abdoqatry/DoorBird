@@ -9,9 +9,7 @@ import UIKit
 import Network
 import AVFoundation
 import CocoaAsyncSocket
-//import Cocoa
 import Accelerate
-//import PlaygroundSupport
 
 
 class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener{
@@ -38,7 +36,7 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener{
     }
     
     private var udpSocket: GCDAsyncUdpSocket?
-    private let CLOUD_API_ACCESS_TOKEN = "12ab4cb760918417a67d04bd8b8fbff845a212cd3a5820178beeb3d9083b42ea"
+    private let CLOUD_API_ACCESS_TOKEN = "623f7af2e994c6ed8ff712a4cf62dd3895f462318fa7adfa9b0c0b39bd452a43"
     private let VIDEO_ENABLED = true
     private let AUDIO_SPEAKER_ENABLED = true
     private let AUDIO_MIC_ENABLED = false
@@ -91,40 +89,36 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener{
                 if success {
             if self.AUDIO_SPEAKER_ENABLED {
            
-//            let format = AVAudioFormat(commonFormat: .pcmFormatInt16, sampleRate: 8000, channels: 1, interleaved: false)!
-//                print(format)
+            let format = AVAudioFormat(commonFormat: .pcmFormatFloat32, sampleRate: 8000, channels: 1, interleaved: false)!
+                print(format)
                 let input = self.audioEngine.inputNode
                 let bus = 0
                 let inputFormat = input.inputFormat(forBus: bus)
                 
              let audioPlayer = AVAudioPlayerNode()
             self.audioEngine.attach(audioPlayer)
-            self.audioEngine.connect(audioPlayer, to: self.audioEngine.mainMixerNode, format: inputFormat)
+            self.audioEngine.connect(audioPlayer, to: self.audioEngine.mainMixerNode, format: format)
                 try!self.audioEngine.start()
             audioPlayer.play()
                         
         let outputFormat = AVAudioFormat(commonFormat: .pcmFormatInt16,
-                                            sampleRate: 44100 ,
+                                            sampleRate: 16000 ,
                                             channels: 1,
                                             interleaved: false)!
                 
-            let bufferSize = inputFormat.sampleRate * 0.1
+//            let bufferSize = inputFormat.sampleRate * 0.1
             self.aq.startDecoding(audioListener: { buffer in
-        guard let pcmBuffer = AVAudioPCMBuffer(pcmFormat: outputFormat, frameCapacity: AVAudioFrameCount(buffer.count)) else { return }
+//        guard let pcmBuffer = AVAudioPCMBuffer(pcmFormat: outputFormat, frameCapacity: AVAudioFrameCount(buffer.count)) else { return }
                 print("buffer is = \(buffer)")
+                
+                let frameCapacity = AVAudioFrameCount(buffer.count)
+                  
+            guard let pcmBuffer = AVAudioPCMBuffer(pcmFormat: inputFormat, frameCapacity: frameCapacity) else {
+                      print("Error creating PCM buffer")
+                return
+                  }
            
                 self.setupAudioPlayer(buffer)
-//                self.playAudio(pcm: buffer)
-//                pcmBuffer.frameLength = pcmBuffer.frameCapacity
-//                let pcmBufferPointer = pcmBuffer.int16ChannelData![0]
-//                    for i in 0 ..< buffer.count {
-//                        pcmBufferPointer[i] = buffer[i]
-//                    }
-//                audioPlayer.volume = 0.5
-//                audioPlayer.scheduleBuffer(pcmBuffer)
-//                audioPlayer.play()
-//                Thread.sleep(forTimeInterval: 2.0)
-                            
                 
                         })
                     }
@@ -167,11 +161,12 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener{
     func setupAudioPlayer(_ int16Buffer: [Int16]){
         var pcmFloatData: [Float] = []
         
-            let audioFormat = AVAudioFormat(standardFormatWithSampleRate: 8000 , channels: 1)!
-            let frameCapacity = AVAudioFrameCount(int16Buffer.count)
+            let audioFormat = AVAudioFormat(standardFormatWithSampleRate: 8000, channels: 1)!
+        let frameCapacity = AVAudioFrameCount(int16Buffer.count)
             if let pcmBuf = AVAudioPCMBuffer(pcmFormat: audioFormat, frameCapacity: frameCapacity) {
                 let monoChannel = pcmBuf.floatChannelData![0]
-                pcmFloatData = [Float](repeating: 0.0, count: int16Buffer.count)
+                
+                pcmFloatData = [Float](repeating: 0.5, count: int16Buffer.count)
                 
                 // Int16 ranges from -32768 to 32767 -- we want to convert and scale these to Float values between -1.0 and 1.0
                 var scale = Float(Int16.max) + 1.0
@@ -215,7 +210,7 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener{
     func setupAudioPlayer2(_ int16Buffer: [Int16]) {
         let audioFormat =  AVAudioFormat(standardFormatWithSampleRate: 8000, channels: 1)!
          
-        let frameCapacity = AVAudioFrameCount(32768)
+        let frameCapacity = AVAudioFrameCount(32768 * 8)
         
         guard let pcmBuffer = AVAudioPCMBuffer(pcmFormat: audioFormat, frameCapacity: frameCapacity) else {
             print("Error creating PCM buffer")
@@ -236,8 +231,8 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener{
         let audioPlayer = AVAudioPlayerNode()
         audioEngine.attach(audioPlayer)
         audioEngine.connect(audioPlayer, to: audioEngine.mainMixerNode, format: audioFormat)
-        
-//        x *= 2
+
+        audioPlayer.volume = 1
         
         do {
             let audioSession = AVAudioSession.sharedInstance()
@@ -254,76 +249,95 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener{
     }
     
 //    func setupAudioPlayer3(_ int16Buffer: [Int16]) {
-//        let audioFormat = AVAudioFormat(standardFormatWithSampleRate: 8000, channels: 1)!
-//           let frameCapacity = AVAudioFrameCount(int16Buffer.count)
-//           let bufferCount = 10
+//        print("int16 = \(int16Buffer)")
+//        let sampleRate = 8000
+//        let channels = 1
+//        let downsamplingFactor = 2 // Downsample by a factor of 2 to get 80 samples
 //
-//           var pcmBuffers: [AVAudioPCMBuffer] = []
-//           var pcmFloatData: [Float] = []
+//        // Convert Int16 samples to Float32 and downsample
+//        var pcmFloatData =
+//        var scale = Float(Int16.max) + 1.0
+////        vDSP_vflt16(int16Buffer, 1, &pcmFloatData, 1, vDSP_Length(pcmFloatData.count))
+////        vDSP_vsdiv(pcmFloatData, 1, &scale, &pcmFloatData, 1, vDSP_Length(pcmFloatData.count))
 //
-//           for i in 0..<bufferCount {
-//               guard let pcmBuffer = AVAudioPCMBuffer(pcmFormat: audioFormat, frameCapacity: frameCapacity) else {
-//                   print("Error creating PCM buffer")
-//                   return
-//               }
+////        for i in stride(from: 0, to: int16Buffer.count, by: 2) {
+////            let value = (UInt32(UInt16(bitPattern: int16Buffer[i])) << 16) | UInt32(UInt16(bitPattern: int16Buffer[i+1]))
 //
-//               let floatChannel = pcmBuffer.floatChannelData![0]
-//               pcmFloatData = [Float](repeating: 0.0, count: int16Buffer.count)
+////        var mergedInt32 = mergeToInt32(first: int16Buffer[i], second: int16Buffer[i + 1])
+////
+////            let float32Value = Float32(bitPattern: UInt32(bitPattern: mergedInt32))
+////            pcmFloatData.append(float32Value)
+////        }
+//        print("pcm float data = \(pcmFloatData)")
 //
-//               // Convert Int16 PCM data to 32-bit Float format and scale to [-1.0, 1.0]
-//               var scale = Float(Int16.max) + 1.0
-//               vDSP_vflt16(int16Buffer, 1, &pcmFloatData, 1, vDSP_Length(int16Buffer.count))
-//               vDSP_vsdiv(pcmFloatData, 1, &scale, &pcmFloatData, 1, vDSP_Length(int16Buffer.count))
+//        // Create audio format with the desired sample rate and number of channels
+//        let audioFormat = AVAudioFormat(commonFormat: .pcmFormatFloat32, sampleRate: Double(sampleRate), channels: AVAudioChannelCount(channels), interleaved: false)!
 //
-//               let bufferOffset = i * Int(frameCapacity)
-//               let bufferIndex = Int(frameCapacity) * i
+//        // Create an AVAudioPCMBuffer to hold the downsampled and converted samples
+//        let frameCapacity = AVAudioFrameCount(pcmFloatData.count)
+//        guard let pcmBuffer = AVAudioPCMBuffer(pcmFormat: audioFormat, frameCapacity: frameCapacity) else {
+//            print("Error creating PCM buffer")
+//            return
+//        }
+//        pcmBuffer.frameLength = frameCapacity
+//        let floatChannel = pcmBuffer.floatChannelData![0]
+//        memcpy(floatChannel, pcmFloatData, MemoryLayout<Float>.size * pcmFloatData.count)
 //
-//               memcpy(floatChannel.advanced(by: bufferIndex), pcmFloatData + bufferOffset, MemoryLayout<Float>.size * Int(frameCapacity))
-//               pcmBuffer.frameLength = frameCapacity
+//        // Create an AVAudioPlayerNode and attach it to the audio engine
+//        let audioPlayer = AVAudioPlayerNode()
+//        audioEngine.attach(audioPlayer)
 //
-//               pcmBuffers.append(pcmBuffer)
-//           }
+//        // Connect the player node to the mixer node and start the audio engine
+//        audioEngine.connect(audioPlayer, to: audioEngine.mainMixerNode, format: audioFormat)
+//        do {
+//            let audioSession = AVAudioSession.sharedInstance()
+//            try audioSession.setCategory(.playAndRecord)
+//            try audioSession.overrideOutputAudioPort(.speaker)
+//            try audioEngine.start()
+//        } catch {
+//            print("Error setting up audio player: \(error.localizedDescription)")
+//            return
+//        }
 //
-//           let audioPlayer = AVAudioPlayerNode()
-//           audioEngine.attach(audioPlayer)
-//           audioEngine.connect(audioPlayer, to: audioEngine.mainMixerNode, format: audioFormat)
-//
-//           do {
-//               let audioSession = AVAudioSession.sharedInstance()
-//               try audioSession.setCategory(.playAndRecord)
-//               try audioSession.overrideOutputAudioPort(.speaker)
-//               try audioEngine.start()
-//           } catch {
-//               print("Error setting up audio player: \(error.localizedDescription)")
-//               return
-//           }
-//
-//           for pcmBuffer in pcmBuffers {
-//               audioPlayer.scheduleBuffer(pcmBuffer)
-//           }
-//
-//           audioPlayer.play()
+//        // Schedule the audio buffer to play
+//        audioPlayer.scheduleBuffer(pcmBuffer)
+//        audioPlayer.play()
 //    }
+    
     
 //    func playAudio(pcm: [Int16]) {
 //        print("pcm 16 = \(pcm)")
+//        let outputFormat = AVAudioFormat.init(commonFormat: AVAudioCommonFormat.pcmFormatFloat32, sampleRate: 8000, channels: 1, interleaved: false)
 //
-//        var pcmFloatData = [Float](repeating: 0.0, count: 2000)
+//        let audioBuffer = AVAudioPCMBuffer(pcmFormat: outputFormat!, frameCapacity: 160)!
 //
-//        let format = AVAudioFormat(commonFormat: .pcmFormatFloat32, sampleRate: 8000, channels: 1, interleaved: true)!
-//          let buffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: AVAudioFrameCount(pcm.count))!
-//        let floatChannel = buffer.floatChannelData![0]
-//          buffer.floatChannelData?.pointee.withMemoryRebound(to: Float.self, capacity: pcm.count) {
-//              memcpy($0, pcm, pcm.count * MemoryLayout<Int16>.size)
+//          // Each real data of the array input is reduced to the interval [-1, 1]
+//          for i in 0..<pcm.count {
+//             // Convert the buffer to floats. (before resampling)
+//             let div: Float32 = (1.0 / 32768.0)
+//             let floatKiller = div * Float32(i)
+//
+//             audioBuffer.floatChannelData?.pointee[i] = floatKiller
 //          }
-//        print("buffer as pcm 32 \(buffer)")
+//
+//          audioBuffer.frameLength = audioBuffer.frameCapacity
+//
+////        var pcmFloatData = [Float](repeating: 0.0, count: 2000)
+//
+////        let format = AVAudioFormat(commonFormat: .pcmFormatFloat32, sampleRate: 8000, channels: 1, interleaved: true)!
+////          let buffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: AVAudioFrameCount(pcm.count))!
+////        let floatChannel = buffer.floatChannelData![0]
+////          buffer.floatChannelData?.pointee.withMemoryRebound(to: Float.self, capacity: pcm.count) {
+////              memcpy($0, pcm, pcm.count * MemoryLayout<Int16>.size)
+////          }
+////        print("buffer as pcm 32 \(buffer)")
 //          let player = AVAudioPlayerNode()
 //        audioEngine.attach(player)
-//        audioEngine.connect(player, to: audioEngine.mainMixerNode, format: format)
+//        audioEngine.connect(player, to: audioEngine.mainMixerNode, format: outputFormat)
 //
-//    var scale = Float(Int16.max) + 1.0
-//        vDSP_vflt16(pcm, 1, &pcmFloatData, 1, vDSP_Length(pcm.count))
-//        vDSP_vsdiv(pcmFloatData, 1, &scale, &pcmFloatData, 1, vDSP_Length(pcm.count))
+////    var scale = Float(Int16.max) + 1.0
+////        vDSP_vflt16(pcm, 1, &pcmFloatData, 1, vDSP_Length(pcm.count))
+////        vDSP_vsdiv(pcmFloatData, 1, &scale, &pcmFloatData, 1, vDSP_Length(pcm.count))
 //        player.volume = 1
 //        let audioSession = AVAudioSession.sharedInstance()
 //
@@ -334,11 +348,13 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener{
 //        } catch let error {
 //            print("Error setting audio session category: \(error.localizedDescription)")
 //        }
-//          player.scheduleBuffer(buffer)
+//          player.scheduleBuffer(audioBuffer)
 //               audioEngine.prepare()
 //          try! audioEngine.start()
 //          player.play()
 //    }
+    
+    
       override func viewDidLayoutSubviews() {
           super.viewDidLayoutSubviews()
           liveImageView.frame = view.bounds
@@ -505,7 +521,7 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener{
                     defer { bufferPointer.deallocate() }
                     _ = subdata.copyBytes(to: bufferPointer)
                     let ulaw = Array(bufferPointer)
-                        print("subdata\(ulaw)")
+//                        print("subdata\(ulaw)")
                     
                     i += length
 

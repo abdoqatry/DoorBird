@@ -6,9 +6,8 @@ target 'DoorBird' do
   use_frameworks!
 
   # Pods for DoorBird
- pod 'Alamofire'
-  pod 'SwiftyJSON', '~> 4.2'
 pod 'CocoaAsyncSocket'
 pod 'Kingfisher', '~> 7.0'
+pod 'AudioKit'
 
 end
