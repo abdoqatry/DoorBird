@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import Sodium
+//import Sodium
 
     public enum EncryptionType {
         case none
