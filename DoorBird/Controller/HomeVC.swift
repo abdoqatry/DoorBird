@@ -36,9 +36,9 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener{
     }
     
     private var udpSocket: GCDAsyncUdpSocket?
-    private let CLOUD_API_ACCESS_TOKEN = "6ae7645b6964da37fe16ba0b69a845e1564cbc1f14191a5c9d44c3625aaf61a3"
+    private let CLOUD_API_ACCESS_TOKEN = "9d2ee30bc9c745bc8129fec8d6017a79fc920dffa9068b712c1e779012b01556"
     private let VIDEO_ENABLED = true
-    private let AUDIO_SPEAKER_ENABLED = false
+    private let AUDIO_SPEAKER_ENABLED = true
     private let AUDIO_MIC_ENABLED = true
     private let INFO_URL = "https://api.doorbird.io/live/info"
     private var requestedFlags: Int = 0
@@ -50,6 +50,7 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener{
     private var jq = JpegQueue()
     private var aq = AudioQueue()
     var audioEngine = AVAudioEngine()
+    var converter = AVAudioConverter()
     
     
     override func viewDidLoad() {
@@ -96,7 +97,6 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener{
                 try!self.audioEngine.start()
                 audioPlayer.play()
                 
-                
                 var sentList :[Int16] = []
                 self.aq.startDecoding(audioListener: { buffer in
                 
@@ -106,9 +106,8 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener{
                         sentList.removeAll()
                     }
                     else {
-                                sentList.append(contentsOf: buffer)
-                            }
-                            
+                sentList.append(contentsOf: buffer)
+                    }
                             
                         })
                     }
@@ -432,12 +431,14 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener{
         let outputFormat = AVAudioFormat(commonFormat: .pcmFormatInt16,
                                            sampleRate: 8000,
                                            channels: 1,
-                                           interleaved: true)!
+                                           interleaved: false)!
           let input = audioEngine.inputNode
          
           let inputFormat = input.outputFormat(forBus: bus)
               
           let bufferSize = inputFormat.sampleRate * 0.1
+        
+        self.converter = AVAudioConverter(from: inputFormat, to: outputFormat)!
         
         
         let audioPlayer = AVAudioPlayerNode()
@@ -453,12 +454,13 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener{
         }
         
         audioInput.installTap(onBus: 0, bufferSize: UInt32(bufferSize), format: inputFormat) { (buffer, time) in
-        
-            let convertedBuffer = self.convertBuffer(buffer: buffer, from: inputFormat, to: outputFormat)
+           
+            
+            let convertedBuffer = self.convertBuffer(buffer: buffer,outputFormat:outputFormat)
             print(convertedBuffer.format.sampleRate)
             
             // Check that the buffer contains 16-bit integer audio data
-            guard convertedBuffer.format.isInterleaved && convertedBuffer.format.sampleRate == 8000 && convertedBuffer.format.channelCount == 1 && convertedBuffer.format.commonFormat == .pcmFormatInt16 else {
+            guard  convertedBuffer.format.sampleRate == 8000 && convertedBuffer.format.channelCount == 1 && convertedBuffer.format.commonFormat == .pcmFormatInt16 else {
                 // Handle error: buffer does not contain 16-bit integer audio data with 1 channel and a sample rate of 44.1 kHz
                 return
             }
@@ -467,15 +469,15 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener{
             let pcmData = Array(UnsafeBufferPointer(start: convertedBuffer.int16ChannelData?[0], count: Int(convertedBuffer.frameLength)))
 
             
-            print("buffer int16 =\(pcmData.count)")
+            print("buffer int16 =\(pcmData)")
             let chunkSize = 160
-            
+//            var sentList :[Int16] = []
             for i in stride(from: 0, to: pcmData.count, by: chunkSize) {
                 let startIndex = i
                 let endIndex = min(i + chunkSize, pcmData.count)
                 let chunk = Array(pcmData[startIndex..<endIndex])
                 self.transmitAudioData(audioData: chunk)
-                
+
             }
                 
             audioPlayer.play()
@@ -483,29 +485,23 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener{
             audioEngine.prepare()
         }
     }
-
-    func convertBuffer(buffer: AVAudioPCMBuffer,
-                       from inputFormat: AVAudioFormat,
-                       to outputFormat: AVAudioFormat) -> AVAudioPCMBuffer {
-            
-        let converter = AVAudioConverter(from: inputFormat, to: outputFormat)!
-            
-        let inputCallback: AVAudioConverterInputBlock = { inNumPackets, outStatus in
-            outStatus.pointee = .haveData
-            return buffer
-        }
-            
-        let convertedBuffer = AVAudioPCMBuffer(
-            pcmFormat: outputFormat,
-            frameCapacity: AVAudioFrameCount(outputFormat.sampleRate) * buffer.frameLength / AVAudioFrameCount(buffer.format.sampleRate))!
-            
-        var error: NSError?
-        let status = converter.convert(to: convertedBuffer, error: &error, withInputFrom: inputCallback)
-        assert(status != .error)
-            
-        return convertedBuffer
-    }
-
+    
+    func convertBuffer(buffer: AVAudioPCMBuffer,outputFormat:AVAudioFormat) -> AVAudioPCMBuffer {
+           let inputCallback: AVAudioConverterInputBlock = { inNumPackets, outStatus in
+               outStatus.pointee = .haveData
+               return buffer
+           }
+           
+           let convertedBuffer = AVAudioPCMBuffer(
+               pcmFormat: outputFormat,
+               frameCapacity: AVAudioFrameCount(outputFormat.sampleRate) * buffer.frameLength / AVAudioFrameCount(buffer.format.sampleRate))!
+           
+           var error: NSError?
+           let status = converter.convert(to: convertedBuffer, error: &error, withInputFrom: inputCallback)
+           assert(status != .error)
+           
+           return convertedBuffer
+       }
 
     
     private func sendEncryptedPacket(data: [UInt8]) throws {
@@ -517,8 +513,8 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener{
         var nonceData = [UInt8](repeating: 0, count: 8)
         for i in 0..<nonceData.count {
             nonceData[i] = UInt8((encryptionNonce >> (i * 8)) & 0xff)
-//            print("value = \(encryptionNonce >> (i * 8))")
-//            print("encryptionNonce = \(encryptionNonce)")
+            print("value = \(encryptionNonce >> (i * 8))")
+            print("encryptionNonce = \(encryptionNonce)")
             
         }
         print("nonchData\(nonceData[0])")
@@ -533,16 +529,17 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener{
         for i in 0..<cypher!.count {
             encryptedPacket[i+nonceData.count+1] = cypher![i]
         }
+      
+        
+        let int8List: [Int8] = encryptedPacket.map { Int8(bitPattern: UInt8($0)) }
+            let data = int8List.withUnsafeBytes { bytes -> Data in
+              Data(bytes: bytes.baseAddress!, count: bytes.count)
+            }
         let packetData = Data(encryptedPacket)
-        udpSocket?.send(packetData, toHost: udpAddress, port: udpPort, withTimeout: -1, tag: 0)
+        udpSocket?.send(packetData, toHost: udpAddress, port: udpPort, withTimeout: -1, tag: 1)
         encryptionNonce += 1
     }
 
-
-
-    
-           
-    
     
     /*
     * Sends a packet to the server, packet should already be encrypted.
@@ -550,6 +547,10 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener{
     private func sendPacket(data: Data, length: Int) throws {
          udpSocket?.send(data, toHost: udpAddress, port: UInt16(udpPort), withTimeout: -1, tag: 0)
     }
+    
+    func udpSocket(_ sock: GCDAsyncUdpSocket, didSendDataWithTag tag: Int) {
+          print("didSendDataWithTag = \(" ")\(tag)")
+      }
 
     
     /*
