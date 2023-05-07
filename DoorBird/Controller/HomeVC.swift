@@ -13,13 +13,13 @@ import Accelerate
 
 
 class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener{
-    
-    var udpPort: UInt16 = 6999
-    var udpAddress = "apiorun.doorbird.net"
+
+    var udpPort: UInt16 = 9000
+    var udpAddress = "192.168.1.10"
     var encryptionKey = ""
     var sessionId = "XXDiNMqstOw7jy754170"
     var subscribeSeq :UInt8 = 0
-    
+
     enum UdpConstants: UInt8 {
         case PACKET_SUBSCRIBE = 0x01
         case PACKET_STATE_CHANGE = 0x11
@@ -34,9 +34,9 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener{
         static let STATE_VIDEO_SESSION_INVALID: UInt8 = 5
         static let STATE_AUDIO_SESSION_INVALID: UInt8 = 6
     }
-    
+
     private var udpSocket: GCDAsyncUdpSocket?
-    private let CLOUD_API_ACCESS_TOKEN = "e18c358dd7bf56dbb832181764eb3e1ba884ca735e3b9d05e08408423e20db68"
+    private let CLOUD_API_ACCESS_TOKEN = "65ee3bff9a1090198ff5635aada77f9c3e21040acee4a6309aba81d8fb1ddb0a"
     private let VIDEO_ENABLED = true
     private let AUDIO_SPEAKER_ENABLED = true
     private let AUDIO_MIC_ENABLED = true
@@ -51,8 +51,8 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener{
     private var aq = AudioQueue()
     var audioEngine = AVAudioEngine()
     var converter = AVAudioConverter()
-    
-    
+
+
     override func viewDidLoad() {
         super.viewDidLoad()
         askPermissionIfNeeded()
@@ -60,7 +60,7 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener{
         liveImageView = UIImageView()
         liveImageView.contentMode = .scaleAspectFit
         view.addSubview(liveImageView)
-        
+
         // Request microphone permission from the user
         AVAudioSession.sharedInstance().requestRecordPermission { [weak self] granted in
             guard let self = self else { return }
@@ -73,7 +73,7 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener{
                 }
             }
         }
-        
+
         let audioSession = AVAudioSession.sharedInstance()
         do {
             try audioSession.setCategory(.playAndRecord, options: [.defaultToSpeaker])
@@ -82,36 +82,36 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener{
         } catch {
             print("Failed to set up audio session: \(error)")
         }
-        
-      
+
+
         DispatchQueue.global(qos: .background).async { [self] in
             getInfo { (success) in
                 if success {
                     if self.AUDIO_SPEAKER_ENABLED {
-                        
+
                 let format = AVAudioFormat(commonFormat: .pcmFormatFloat32, sampleRate: 8000, channels: 1, interleaved: false)!
-            
+
                 let audioPlayer = AVAudioPlayerNode()
                 self.audioEngine.attach(audioPlayer)
                 self.audioEngine.connect(audioPlayer, to: self.audioEngine.mainMixerNode, format: format)
                 try!self.audioEngine.start()
                 audioPlayer.play()
-                
+
                 var sentList :[Int16] = []
                 self.aq.startDecoding(audioListener: { buffer in
-                
-                    
-                    if(sentList.count > 10000){
-                self.setupAudioPlayer(sentList)
+
+
+                    if(sentList.count > 20000){
+                        self.setupAudioPlayer(sentList)
                         sentList.removeAll()
                     }
                     else {
                 sentList.append(contentsOf: buffer)
                     }
-                            
+
                         })
                     }
-                        
+
                      if self.AUDIO_MIC_ENABLED {
                         self.transmitMic()
                     }
@@ -125,11 +125,11 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener{
                 }
             }
         }
-        
+
     }
 
-  
-    
+
+
     func askPermissionIfNeeded() {
         switch AVAudioSession.sharedInstance().recordPermission {
         case AVAudioSession.RecordPermission.granted:
@@ -142,20 +142,20 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener{
                 // Handle granted
             })
         @unknown default: break
-            
+
         }
-        
+
     }
 
     func setupAudioPlayer(_ int16Buffer: [Int16]){
             var pcmFloatData: [Float] = []
-            
+
                 let audioFormat = AVAudioFormat(standardFormatWithSampleRate: 8000 , channels: 1)!
                 let frameCapacity = AVAudioFrameCount(int16Buffer.count)
                 if let pcmBuf = AVAudioPCMBuffer(pcmFormat: audioFormat, frameCapacity: frameCapacity) {
                     let monoChannel = pcmBuf.floatChannelData![0]
                     pcmFloatData = [Float](repeating: 0.0, count: int16Buffer.count)
-                    
+
                     // Int16 ranges from -32768 to 32767 -- we want to convert and scale these to Float values between -1.0 and 1.0
                     var scale = Float(Int16.max) + 1.0
                     vDSP_vflt16(int16Buffer, 1, &pcmFloatData, 1, vDSP_Length(int16Buffer.count)) // Int16 to Float
@@ -163,25 +163,25 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener{
 
                     memcpy(monoChannel, pcmFloatData, MemoryLayout<Float>.size * Int(int16Buffer.count))
                     pcmBuf.frameLength = frameCapacity
-                    
+
                     let audioPlayer = AVAudioPlayerNode()
                     audioEngine.attach(audioPlayer)
                     let audioMixer = audioEngine.mainMixerNode
                     audioEngine.connect(audioPlayer, to: audioMixer, format: audioFormat)
                     audioPlayer.volume = 1
-                    
+
                     let audioSession = AVAudioSession.sharedInstance()
-                    
+
                     do {
-                        try audioSession.setCategory(.playback)
-                    
+                        try audioSession.setCategory(.playAndRecord)
+
                     try audioSession.overrideOutputAudioPort(.speaker)
                     } catch let error {
                         print("Error setting audio session category: \(error.localizedDescription)")
                     }
-                    
+
                     audioPlayer.scheduleBuffer(pcmBuf)
-                   
+
                     do {
                          audioEngine.prepare()
                         try audioEngine.start()
@@ -191,12 +191,12 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener{
                     audioPlayer.play()
                 }
         }
-    
+
       override func viewDidLayoutSubviews() {
           super.viewDidLayoutSubviews()
           liveImageView.frame = view.bounds
       }
-    
+
     private func startCamera() {
            DispatchQueue.global(qos: .background).async {
                if true {
@@ -210,7 +210,7 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener{
                }
            }
        }
-    
+
     private func getInfo(completion: @escaping (Bool) -> Void) {
         guard let url = URL(string: INFO_URL) else {
             completion(false)
@@ -242,7 +242,7 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener{
                 self.udpPort = UInt16(mjpg??["port"] as? Int ?? 0)
                 self.sessionId = mjpg??["session"] as? String ?? ""
                 self.encryptionKey = mjpg??["key"] as? String ?? ""
-                print(self.encryptionKey)
+                print( "Encryption Key is \(self.encryptionKey) ")
                 completion(true)
             } catch {
                 print(error.localizedDescription)
@@ -250,9 +250,9 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener{
         }
         task.resume()
 
-        
+
     }
-    
+
     private func runCamera() {
         do {
             udpSocket = try GCDAsyncUdpSocket(delegate: self, delegateQueue: DispatchQueue.main)
@@ -280,19 +280,19 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener{
                     lastSubscribe = Date().timeIntervalSince1970
                     sendSubscribe(unsubscribe: false)
                 }
-                
+
             }
         } catch {
             // Handle errors, e.g. by reconnecting.
             print("Error: \(error)")
         }
     }
-    
+
     func udpSocket(_ sock: GCDAsyncUdpSocket, didReceive data: Data, fromAddress address: Data, withFilterContext filterContext: Any?) {
         processPacket(data, sourceAddress: address)
-       
+
     }
-    
+
     func validateJPEGHeader(_ imageData: Data) -> Bool {
         let expectedHeader: [UInt8] = [0xFF, 0xD8, 0xFF]
         guard imageData.count >= 3 else {
@@ -356,7 +356,7 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener{
                     _ = subdata.copyBytes(to: bufferPointer)
                     let ulaw = Array(bufferPointer)
 //                        print("subdata\(ulaw)")
-                    
+
                     i += length
 
                     aq.enqueue(seq: seq, ulaw: ulaw, r: r)
@@ -376,20 +376,29 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener{
     }
 
 
-    
+
     private func transmitAudioData(audioData: [Int16]) {
         if audioData.count != 160 {
             print("Transmit: must be of size 160")
             return
         }
-        
+
         var ulaw = [UInt8](repeating: 0, count: audioData.count)
+
+//        print("Single Value is \(AudioQueue.l2u)")
+
         for i in 0..<audioData.count {
             // conversion via mapping table from pcm to u-law 8kHz
-            ulaw[i] = UInt8(AudioQueue.l2u[Int(audioData[i]) & 0xffff])
-            
+
+            var index = Int32(Int32(audioData[i]) & Int32(0xffff))
+//            print("Index is \(Int(index))")
+            ulaw[i] = UInt8(truncatingIfNeeded: AudioQueue.l2u[Int(index)])
+
+//            ulaw[i] = UInt8((AudioQueue.l2u[Int(audioData[i]) & 0xffff])) & 0xff
+
         }
-        
+
+        print("Audio Inout is \(ulaw)")
         var audioOutPacket = [UInt8](repeating: 0, count: 164)
         let i = 0
         audioOutPacket[i] = (UdpConstants.PACKET_ULAW).rawValue
@@ -400,15 +409,18 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener{
             audioOutPacket[i+4+j] = ulaw[j]
         }
         audioTransmitSequenceNumber += 1
-        
+
         do {
+            print("Audio Output Data is \(audioOutPacket)")
+
+
             try sendEncryptedPacket(data: audioOutPacket)
         } catch {
             print("Error sending encrypted packet")
         }
     }
-    
-    
+
+
     private func transmitMic() {
         let audioSession = AVAudioSession.sharedInstance()
         do {
@@ -420,45 +432,45 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener{
             print("Error setting audio session category or mode: \(error.localizedDescription)")
             return
         }
-        
+
         let audioEngine = AVAudioEngine()
         let audioInput = audioEngine.inputNode
-        
+
         let bus = 0
 //        let inputFormat = audioInput.inputFormat(forBus: bus)
-        
-        
+
+
         let outputFormat = AVAudioFormat(commonFormat: .pcmFormatInt16,
                                            sampleRate: 8000,
                                            channels: 1,
                                            interleaved: false)!
           let input = audioEngine.inputNode
-         
+
           let inputFormat = input.outputFormat(forBus: bus)
-              
+
           let bufferSize = inputFormat.sampleRate * 0.1
-        
+
         self.converter = AVAudioConverter(from: inputFormat, to: outputFormat)!
-        
-        
+
+
         let audioPlayer = AVAudioPlayerNode()
         audioEngine.attach(audioPlayer)
         audioEngine.connect(audioPlayer, to: audioEngine.mainMixerNode, format: inputFormat)
-       
-        
+
+
         do {
             try audioEngine.start()
         } catch {
             print("Error starting audio engine: \(error.localizedDescription)")
             return
         }
-        
+
         audioInput.installTap(onBus: 0, bufferSize: UInt32(bufferSize), format: inputFormat) { (buffer, time) in
-           
-            
+
+
             let convertedBuffer = self.convertBuffer(buffer: buffer,outputFormat:outputFormat)
             print(convertedBuffer.format.sampleRate)
-            
+
             // Check that the buffer contains 16-bit integer audio data
             guard  convertedBuffer.format.sampleRate == 8000 && convertedBuffer.format.channelCount == 1 && convertedBuffer.format.commonFormat == .pcmFormatInt16 else {
                 // Handle error: buffer does not contain 16-bit integer audio data with 1 channel and a sample rate of 44.1 kHz
@@ -468,7 +480,7 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener{
             // Get the Int16 data from the buffer
             let pcmData = Array(UnsafeBufferPointer(start: convertedBuffer.int16ChannelData?[0], count: Int(convertedBuffer.frameLength)))
 
-            
+
             print("buffer int16 =\(pcmData.count)")
             let chunkSize = 160
 //            var sentList :[Int16] = []
@@ -476,88 +488,93 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener{
                 let startIndex = i
                 let endIndex = min(i + chunkSize, pcmData.count)
                 let chunk = Array(pcmData[startIndex..<endIndex])
+                print("chunk is \(chunk)")
+
                 self.transmitAudioData(audioData: chunk)
 
             }
-           
+
             let data =  UnsafeBufferPointer(start: convertedBuffer.int16ChannelData![0], count: 160)
-        
-            
+
+
             self.transmitAudioData(audioData: Array(data))
-                
+
             audioPlayer.play()
 
             audioEngine.prepare()
         }
     }
-    
+
     func convertBuffer(buffer: AVAudioPCMBuffer,outputFormat:AVAudioFormat) -> AVAudioPCMBuffer {
            let inputCallback: AVAudioConverterInputBlock = { inNumPackets, outStatus in
                outStatus.pointee = .haveData
                return buffer
            }
-           
+
            let convertedBuffer = AVAudioPCMBuffer(
                pcmFormat: outputFormat,
                frameCapacity: AVAudioFrameCount(outputFormat.sampleRate) * buffer.frameLength / AVAudioFrameCount(buffer.format.sampleRate))!
-           
+
            var error: NSError?
            let status = converter.convert(to: convertedBuffer, error: &error, withInputFrom: inputCallback)
            assert(status != .error)
-           
+
            return convertedBuffer
        }
 
-    
+
     private func sendEncryptedPacket(data: [UInt8]) throws {
         if data.count < 4 {
             throw NSError(domain: "invalid packet", code: data.count, userInfo: nil)
         }
 //        encryptionNonce = 1
-        
+
         var nonceData = [UInt8](repeating: 0, count: 8)
         for i in 0..<nonceData.count {
             nonceData[i] = UInt8((encryptionNonce >> (i * 8)) & 0xff)
             print("value = \(encryptionNonce >> (i * 8))")
             print("encryptionNonce = \(encryptionNonce)")
-            
+
         }
+
         print("nonchData\(nonceData[0])")
         let cypher = SodiumEncryption.encrypt(plain: data, plainLen: data.count, nonce: nonceData, password: Array(encryptionKey.utf8))
-        
+
         var encryptedPacket = [UInt8](repeating: 0, count: cypher!.count + nonceData.count + 1)
         encryptedPacket[0] = (UdpConstants.PACKET_ENCRYPTION_TYPE_1).rawValue
         for i in 0..<nonceData.count {
             encryptedPacket[i+1] = nonceData[i]
-            
+
         }
         for i in 0..<cypher!.count {
             encryptedPacket[i+nonceData.count+1] = cypher![i]
         }
-      
-        
-        let int8List: [Int8] = encryptedPacket.map { Int8(bitPattern: UInt8($0)) }
-            let data = int8List.withUnsafeBytes { bytes -> Data in
-              Data(bytes: bytes.baseAddress!, count: bytes.count)
-            }
+
+
+//        let int8List: [Int8] = encryptedPacket.map { Int8(bitPattern: UInt8($0)) }
+//            let data = int8List.withUnsafeBytes { bytes -> Data in
+//              Data(bytes: bytes.baseAddress!, count: bytes.count)
+//            }
         let packetData = Data(encryptedPacket)
+        print("Sent Data is \(data)")
+
         udpSocket?.send(packetData, toHost: udpAddress, port: udpPort, withTimeout: -1, tag: 1)
         encryptionNonce += 1
     }
 
-    
+
     /*
     * Sends a packet to the server, packet should already be encrypted.
     */
     private func sendPacket(data: Data, length: Int) throws {
          udpSocket?.send(data, toHost: udpAddress, port: UInt16(udpPort), withTimeout: -1, tag: 0)
     }
-    
+
     func udpSocket(_ sock: GCDAsyncUdpSocket, didSendDataWithTag tag: Int) {
           print("didSendDataWithTag = \(" ")\(tag)")
       }
 
-    
+
     /*
     * Subscription handling should be done frequently. It defines which type of data are requested.
     * Can be just video or video and audio.
@@ -600,7 +617,7 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener{
         try? sendPacket(data: bb, length: bb.count)
         requestedFlags = Int(subscribe)
     }
-    
+
     private func unsubscribe() {
         do {
             // send unsubscribe multiple times if a udp packet gets lost
@@ -612,8 +629,8 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener{
             print(error)
         }
     }
-    
-    
+
+
     func imgReceived(_ imgData:Data) {
         print("Image received: \(imgData.count)")
         print(imgData)
@@ -623,11 +640,8 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener{
                 }
             }
     }
-    
 
-    
+
+
 
 }
-
-
-
