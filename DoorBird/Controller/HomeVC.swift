@@ -36,7 +36,7 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener{
     }
     
     private var udpSocket: GCDAsyncUdpSocket?
-    private let CLOUD_API_ACCESS_TOKEN = "9d2ee30bc9c745bc8129fec8d6017a79fc920dffa9068b712c1e779012b01556"
+    private let CLOUD_API_ACCESS_TOKEN = "e18c358dd7bf56dbb832181764eb3e1ba884ca735e3b9d05e08408423e20db68"
     private let VIDEO_ENABLED = true
     private let AUDIO_SPEAKER_ENABLED = true
     private let AUDIO_MIC_ENABLED = true
@@ -469,7 +469,7 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener{
             let pcmData = Array(UnsafeBufferPointer(start: convertedBuffer.int16ChannelData?[0], count: Int(convertedBuffer.frameLength)))
 
             
-            print("buffer int16 =\(pcmData)")
+            print("buffer int16 =\(pcmData.count)")
             let chunkSize = 160
 //            var sentList :[Int16] = []
             for i in stride(from: 0, to: pcmData.count, by: chunkSize) {
@@ -479,6 +479,11 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener{
                 self.transmitAudioData(audioData: chunk)
 
             }
+           
+            let data =  UnsafeBufferPointer(start: convertedBuffer.int16ChannelData![0], count: 160)
+        
+            
+            self.transmitAudioData(audioData: Array(data))
                 
             audioPlayer.play()
 
