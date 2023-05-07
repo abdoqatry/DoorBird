@@ -36,7 +36,7 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener{
     }
 
     private var udpSocket: GCDAsyncUdpSocket?
-    private let CLOUD_API_ACCESS_TOKEN = "65ee3bff9a1090198ff5635aada77f9c3e21040acee4a6309aba81d8fb1ddb0a"
+    static var CLOUD_API_ACCESS_TOKEN = ""
     private let VIDEO_ENABLED = true
     private let AUDIO_SPEAKER_ENABLED = true
     private let AUDIO_MIC_ENABLED = true
@@ -218,10 +218,9 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener{
         }
         var request = URLRequest(url: url)
         request.timeoutInterval = 10
-        request.addValue("Bearer \(CLOUD_API_ACCESS_TOKEN)", forHTTPHeaderField: "Authorization")
+        request.addValue("Bearer \(HomeVC.CLOUD_API_ACCESS_TOKEN)", forHTTPHeaderField: "Authorization")
         request.addValue("active", forHTTPHeaderField: "cloud-mjpg")
 
-        print(CLOUD_API_ACCESS_TOKEN)
 
         let task = URLSession.shared.dataTask(with: request) { (data, response, error) in
             guard let httpResponse = response as? HTTPURLResponse,
@@ -437,8 +436,6 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener{
         let audioInput = audioEngine.inputNode
 
         let bus = 0
-//        let inputFormat = audioInput.inputFormat(forBus: bus)
-
 
         let outputFormat = AVAudioFormat(commonFormat: .pcmFormatInt16,
                                            sampleRate: 8000,
@@ -551,10 +548,6 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener{
         }
 
 
-//        let int8List: [Int8] = encryptedPacket.map { Int8(bitPattern: UInt8($0)) }
-//            let data = int8List.withUnsafeBytes { bytes -> Data in
-//              Data(bytes: bytes.baseAddress!, count: bytes.count)
-//            }
         let packetData = Data(encryptedPacket)
         print("Sent Data is \(data)")
 

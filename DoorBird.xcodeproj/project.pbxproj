@@ -151,6 +151,7 @@
 				845B93C929DC410C009A10C6 /* Frameworks */,
 				845B93CA29DC410C009A10C6 /* Resources */,
 				66EFD9FF1834D024E02C27BE /* [CP] Embed Pods Frameworks */,
+				84114ED42A07E29E0024F3F4 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -255,6 +256,23 @@
 			shellPath = /bin/sh;
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-DoorBird/Pods-DoorBird-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
+		};
+		84114ED42A07E29E0024F3F4 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\n# Install the pods\nif [ ! -f Podfile.lock ]; then\n    pod install\nfi\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
