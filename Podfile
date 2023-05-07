@@ -7,7 +7,5 @@ target 'DoorBird' do
 
   # Pods for DoorBird
 pod 'CocoaAsyncSocket'
-pod 'Kingfisher', '~> 7.0'
-pod 'AudioKit'
 
 end

@@ -1,39 +1,16 @@
 PODS:
-  - AudioKit (5.1.0):
-    - AudioKit/C (= 5.1.0)
-    - AudioKit/Core (= 5.1.0)
-    - AudioKit/Soundpipe (= 5.1.0)
-    - AudioKit/Sporth (= 5.1.0)
-    - AudioKit/STK (= 5.1.0)
-  - AudioKit/C (5.1.0):
-    - AudioKit/Soundpipe
-    - AudioKit/Sporth
-    - AudioKit/STK
-  - AudioKit/Core (5.1.0):
-    - AudioKit/C
-  - AudioKit/Soundpipe (5.1.0)
-  - AudioKit/Sporth (5.1.0):
-    - AudioKit/Soundpipe
-  - AudioKit/STK (5.1.0)
   - CocoaAsyncSocket (7.6.5)
-  - Kingfisher (7.6.2)
 
 DEPENDENCIES:
-  - AudioKit
   - CocoaAsyncSocket
-  - Kingfisher (~> 7.0)
 
 SPEC REPOS:
   trunk:
-    - AudioKit
     - CocoaAsyncSocket
-    - Kingfisher
 
 SPEC CHECKSUMS:
-  AudioKit: 81246a4ccdd7ca3c6e0076f913070e90987b4369
   CocoaAsyncSocket: 065fd1e645c7abab64f7a6a2007a48038fdc6a99
-  Kingfisher: 6c5449c6450c5239166510ba04afe374a98afc4f
 
-PODFILE CHECKSUM: 57dd86f08a38e6d2d5fcac635ca5f92d0eea5096
+PODFILE CHECKSUM: d5c2fa8ffba1d4c96852d35645a49004f57c4958
 
 COCOAPODS: 1.12.0
