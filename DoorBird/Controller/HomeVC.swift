@@ -14,8 +14,8 @@ import Accelerate
 
 class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener{
     
-    var udpPort: UInt16 = 6999
-    var udpAddress = "apiorun.doorbird.net"
+    var udpPort: UInt16 = 9000
+    var udpAddress = "192.168.1.10"
     var encryptionKey = ""
     var sessionId = "XXDiNMqstOw7jy754170"
     var subscribeSeq :UInt8 = 0
@@ -36,7 +36,7 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener{
     }
     
     private var udpSocket: GCDAsyncUdpSocket?
-    private let CLOUD_API_ACCESS_TOKEN = "9d2ee30bc9c745bc8129fec8d6017a79fc920dffa9068b712c1e779012b01556"
+    private let CLOUD_API_ACCESS_TOKEN = "65ee3bff9a1090198ff5635aada77f9c3e21040acee4a6309aba81d8fb1ddb0a"
     private let VIDEO_ENABLED = true
     private let AUDIO_SPEAKER_ENABLED = true
     private let AUDIO_MIC_ENABLED = true
@@ -101,8 +101,8 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener{
                 self.aq.startDecoding(audioListener: { buffer in
                 
                     
-                    if(sentList.count > 10000){
-                self.setupAudioPlayer(sentList)
+                    if(sentList.count > 20000){
+                        self.setupAudioPlayer(sentList)
                         sentList.removeAll()
                     }
                     else {
@@ -173,7 +173,7 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener{
                     let audioSession = AVAudioSession.sharedInstance()
                     
                     do {
-                        try audioSession.setCategory(.playback)
+                        try audioSession.setCategory(.playAndRecord)
                     
                     try audioSession.overrideOutputAudioPort(.speaker)
                     } catch let error {
@@ -242,7 +242,7 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener{
                 self.udpPort = UInt16(mjpg??["port"] as? Int ?? 0)
                 self.sessionId = mjpg??["session"] as? String ?? ""
                 self.encryptionKey = mjpg??["key"] as? String ?? ""
-                print(self.encryptionKey)
+                print( "Encryption Key is \(self.encryptionKey) ")
                 completion(true)
             } catch {
                 print(error.localizedDescription)
@@ -384,12 +384,21 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener{
         }
         
         var ulaw = [UInt8](repeating: 0, count: audioData.count)
+        
+//        print("Single Value is \(AudioQueue.l2u)")
+
         for i in 0..<audioData.count {
             // conversion via mapping table from pcm to u-law 8kHz
-            ulaw[i] = UInt8(AudioQueue.l2u[Int(audioData[i]) & 0xffff])
+            
+            var index = Int32(Int32(audioData[i]) & Int32(0xffff))
+//            print("Index is \(Int(index))")
+            ulaw[i] = UInt8(truncatingIfNeeded: AudioQueue.l2u[Int(index)])
+
+//            ulaw[i] = UInt8((AudioQueue.l2u[Int(audioData[i]) & 0xffff])) & 0xff
             
         }
         
+        print("Audio Inout is \(ulaw)")
         var audioOutPacket = [UInt8](repeating: 0, count: 164)
         let i = 0
         audioOutPacket[i] = (UdpConstants.PACKET_ULAW).rawValue
@@ -402,6 +411,9 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener{
         audioTransmitSequenceNumber += 1
         
         do {
+            print("Audio Output Data is \(audioOutPacket)")
+            
+            
             try sendEncryptedPacket(data: audioOutPacket)
         } catch {
             print("Error sending encrypted packet")
@@ -468,14 +480,19 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener{
             // Get the Int16 data from the buffer
             let pcmData = Array(UnsafeBufferPointer(start: convertedBuffer.int16ChannelData?[0], count: Int(convertedBuffer.frameLength)))
 
-            
-            print("buffer int16 =\(pcmData)")
+//            a14a0aafb273a804b2b06d6c840eb337
+//            print("buffer int16 =\(pcmData)")
+//            self.transmitAudioData(audioData:Array(pcmData[0..<159]))
+
+//
             let chunkSize = 160
 //            var sentList :[Int16] = []
             for i in stride(from: 0, to: pcmData.count, by: chunkSize) {
                 let startIndex = i
                 let endIndex = min(i + chunkSize, pcmData.count)
                 let chunk = Array(pcmData[startIndex..<endIndex])
+                print("chunk is \(chunk)")
+                
                 self.transmitAudioData(audioData: chunk)
 
             }
@@ -517,6 +534,7 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener{
             print("encryptionNonce = \(encryptionNonce)")
             
         }
+
         print("nonchData\(nonceData[0])")
         let cypher = SodiumEncryption.encrypt(plain: data, plainLen: data.count, nonce: nonceData, password: Array(encryptionKey.utf8))
         
@@ -531,11 +549,13 @@ class HomeVC: UIViewController, GCDAsyncUdpSocketDelegate,ImgListener{
         }
       
         
-        let int8List: [Int8] = encryptedPacket.map { Int8(bitPattern: UInt8($0)) }
-            let data = int8List.withUnsafeBytes { bytes -> Data in
-              Data(bytes: bytes.baseAddress!, count: bytes.count)
-            }
+//        let int8List: [Int8] = encryptedPacket.map { Int8(bitPattern: UInt8($0)) }
+//            let data = int8List.withUnsafeBytes { bytes -> Data in
+//              Data(bytes: bytes.baseAddress!, count: bytes.count)
+//            }
         let packetData = Data(encryptedPacket)
+        print("Sent Data is \(data)")
+
         udpSocket?.send(packetData, toHost: udpAddress, port: udpPort, withTimeout: -1, tag: 1)
         encryptionNonce += 1
     }

@@ -132,32 +132,34 @@ class AudioQueue {
     
     
     static var generateL2u: [UInt8] {
-        let cBias: Int = 0x84
-        let cClip: Int = 32635
         var result = [UInt8](repeating: 0, count: 64 * 1024)
         for i in 0..<result.count {
-            result[i] = l2uByte(sample: i, cBias: cBias, cClip: cClip).value
+            result[i] = l2u(sample: i)
         }
         return result
     }
 
-    static func l2uByte(sample: Int, cBias: Int, cClip: Int) -> Byte {
-        let sign = ((~sample) >> 8) & 0x80
-        var sample = sample
+    static func l2u(sample: Int) -> UInt8 {
+        let cBias = 0x84
+        let cClip = 32635
+        var sign = ((~sample) >> 8) & 0x80
+        var mutableSample = sample
+        
         if sign == 0 {
-            sample = -sample
+            mutableSample = -mutableSample
         }
-        if sample > cClip {
-            sample = cClip
+        
+        if mutableSample > cClip {
+            mutableSample = cClip
         }
-        sample = sample + cBias
-        let exponent = l2uexp[(sample >> 7) & 0xff]
-        let mantissa = (sample >> (exponent + 3)) & 0x0f
+        
+        mutableSample = mutableSample + cBias
+        let exponent = l2uexp[(mutableSample >> 7) & 0xff]
+        let mantissa = (mutableSample >> (exponent + 3)) & 0x0f
         let compressedByte = ~(sign | (exponent << 4) | mantissa)
-        let byteValue = max(0, compressedByte)
-        return Byte(UInt8(byteValue))
+        
+        return UInt8(truncatingIfNeeded: compressedByte)
     }
-    
     
 }
 
