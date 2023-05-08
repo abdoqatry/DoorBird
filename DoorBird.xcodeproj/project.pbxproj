@@ -100,7 +100,6 @@
 			isa = PBXGroup;
 			children = (
 				840DC43929E7053900A6BD15 /* Model */,
-				845B93EC29DC4A3C009A10C6 /* Network */,
 				845B93E329DC431F009A10C6 /* Controller */,
 				845B93CF29DC410C009A10C6 /* AppDelegate.swift */,
 				845B93D829DC410D009A10C6 /* Assets.xcassets */,
@@ -121,13 +120,6 @@
 				840DC43C29E721D900A6BD15 /* BufferModel.swift */,
 			);
 			path = Controller;
-			sourceTree = "<group>";
-		};
-		845B93EC29DC4A3C009A10C6 /* Network */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Network;
 			sourceTree = "<group>";
 		};
 		A475A7D952F5957EBB54A790 /* Frameworks */ = {

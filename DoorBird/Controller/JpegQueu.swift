@@ -6,7 +6,6 @@
 ////
 //
 import Foundation
-import Kingfisher
 
 public protocol ImgListener {
        func imgReceived(_ imgData: Data)
